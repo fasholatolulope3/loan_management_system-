@@ -42,11 +42,16 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        // SENIOR FIX: Block deletion if they have loans
+        if (!$user->canBeDeleted()) {
+            return back()->with('error', 'Account cannot be deleted while you have an active or pending loan application.');
+        }
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = $request->user();
 
         Auth::logout();
 

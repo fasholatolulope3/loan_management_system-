@@ -33,6 +33,27 @@ class User extends Authenticatable
             $this->client->guarantors->count() > 0;
     }
 
+    /**
+     * Check if the user can be deleted.
+     * A client cannot be deleted if they have pending, approved, active, or defaulted loans.
+     */
+    public function canBeDeleted(): bool
+    {
+        // Admins and Officers can always be deleted (unless you have other rules)
+        if ($this->role !== 'client') {
+            return true;
+        }
+
+        // Load the client profile and check for non-finalized loans
+        if ($this->client) {
+            return !$this->client->loans()
+                ->whereIn('status', ['pending', 'approved', 'active', 'defaulted'])
+                ->exists();
+        }
+
+        return true;
+    }
+
     public function client(): HasOne
     {
         return $this->hasOne(Client::class);

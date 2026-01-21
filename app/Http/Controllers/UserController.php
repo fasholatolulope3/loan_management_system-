@@ -30,7 +30,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'role' => $validated['role'],
-            'password' =>Hash::make($validated['password']),
+            'password' => Hash::make($validated['password']),
         ]);
 
         return redirect()->route('users.index')->with('success', 'Staff member added successfully.');
@@ -50,5 +50,16 @@ class UserController extends Controller
     {
         // A user is verified if they have a client record and the national_id is filled
         return $this->client()->exists() && !empty($this->client->national_id);
+    }
+
+    public function destroy(User $user)
+    {
+        if (!$user->canBeDeleted()) {
+            return back()->with('error', 'This client has active financial obligations and cannot be removed.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 }

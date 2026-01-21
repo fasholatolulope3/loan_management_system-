@@ -9,8 +9,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                    <p class="text-sm text-gray-500 uppercase font-bold">Total Disbursed</p>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow dark:shadow-none text-gray-900 dark:text-gray-100">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 uppercase font-bold">Total Disbursed</p>
                     <p class="text-2xl font-bold">₦{{ number_format($stats['total_disbursed'], 2) }}</p>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
