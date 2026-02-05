@@ -11,35 +11,31 @@ use App\Http\Controllers\{
     AuditLogController,
     DashboardController,
     GuarantorController,
-    LoanProductController
+    LoanProductController,
+    CollationCenterController
 };
 
 /*
 |--------------------------------------------------------------------------
-| 1. Public Routes
+| 1. Public Entrance
 |--------------------------------------------------------------------------
 */
-
 Route::get('/', function () {
     return view('welcome');
 });
 
 /*
 |--------------------------------------------------------------------------
-| 2. Authenticated Routes (The "Waiting Room")
+| 2. Onboarding & Basic Profile (Accessible Pre-KYC)
 |--------------------------------------------------------------------------
-| These routes are accessible as soon as a user logs in.
-| We DO NOT apply 'kyc.completed' here so they can actually finish onboarding.
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // KYC / Onboarding Flow
     Route::prefix('onboarding')->name('kyc.')->group(function () {
         Route::get('/complete-profile', [KycController::class, 'create'])->name('create');
         Route::post('/complete-profile', [KycController::class, 'store'])->name('store');
     });
 
-    // Profile Management (Basic info accessible anytime)
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
@@ -48,62 +44,79 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |----------------------------------------------------------------------
-    | 3. KYC Protected Routes (The "Core App")
+    | 3. Core App - Staff & Admin Managed (Requirement #4 & #6)
     |----------------------------------------------------------------------
-    | Only users who have finished KYC (or are staff) can enter here.
     */
     Route::middleware(['kyc.completed'])->group(function () {
 
-        // Unified Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+        // Shared Resources for Field Operations (Requirement #7)
+        Route::resource('clients', ClientController::class);
+
+        // Requirement #7: FORM CF4 Guarantor Assessment Registry
+        Route::resource('guarantors', GuarantorController::class);
+
+        // Requirement #7 & #8: Loan Pipeline (Proposal -> Review -> Approved)
+        Route::resource('loans', LoanController::class);
+
+        // Repayment Journal (Requirement #9)
+        Route::resource('payments', PaymentController::class);
+        Route::get('/loans/{loan}/print', [LoanController::class, 'print'])->name('loans.print');
         /**
-         * ADMIN ONLY
+         * REPORTING & COMPLIANCE (Requirement #9)
          */
-        Route::middleware(['role:admin'])->prefix('admin')->group(function () {
-            Route::resource('users', UserController::class);
-            Route::resource('loan-products', LoanProductController::class);
-            Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
-            Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
-            Route::get('/reports', [DashboardController::class, 'reports'])->name('reports');
+        Route::prefix('reports')->name('reports.')->group(function () {
+            // Search for Arrears & Print
+            Route::get('/arrears', [LoanController::class, 'arrears'])->name('arrears');
+            // Global Statistics
+            Route::get('/global-summary', [DashboardController::class, 'reports'])->name('global');
         });
 
         /**
-         * STAFF (Admin & Officer)
+         * STAFF OPERATIONAL ACTIONS (Requirement #5 & #8)
          */
         Route::middleware(['role:admin,officer'])->group(function () {
-            Route::resource('clients', ClientController::class);
-
-            // Loan Processing
-            Route::get('/loans/pending', [LoanController::class, 'pending'])->name('loans.pending');
+            // Loan Management
             Route::patch('/loans/{loan}/approve', [LoanController::class, 'approve'])->name('loans.approve');
             Route::patch('/loans/{loan}/reject', [LoanController::class, 'reject'])->name('loans.reject');
 
-            // Payments
-            Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store']);
+            // NEW: Authority verification of payment receipts
+            Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify'])->name('payments.verify');
         });
 
         /**
-         * CLIENT ONLY (KYC already verified)
+         * ADMIN ONLY ROUTES (Executive Infrastructure - Requirement #5)
          */
-        Route::middleware(['role:client'])->group(function () {
-            Route::get('/loans/apply', [LoanController::class, 'create'])->name('loans.create');
-            Route::post('/loans/apply', [LoanController::class, 'store'])->name('loans.store');
-            Route::get('/repayment-schedule', [LoanController::class, 'schedules'])->name('schedules');
-            Route::resource('guarantors', GuarantorController::class);
+        Route::middleware(['role:admin'])->prefix('admin')->group(function () {
+
+            // Collation Centers Registry (Mandatory Setup for Branch Credentials)
+            Route::resource('centers', CollationCenterController::class)->names([
+                'index' => 'admin.centers.index',
+                'store' => 'admin.centers.store',
+                'destroy' => 'admin.centers.destroy',
+            ]);
+
+            // User & Staff Permissions
+            Route::resource('users', UserController::class);
+
+            // Product Definition (Requirement #1, #2, #3)
+            Route::resource('loan-products', LoanProductController::class);
+
+            // Audit Trace & Configuration
+            Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+            Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
+
+            // Back-and-forth Adjustment Loop (Requirement #8)
+            Route::patch('/loans/{loan}/adjustment', [LoanController::class, 'requestAdjustment'])->name('loans.adjustment');
         });
 
-        /**
-         * SHARED RESOURCES
-         */
-        Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
-        Route::get('/loans/{loan}', [LoanController::class, 'show'])->name('loans.show');
     });
 });
 
 /*
 |--------------------------------------------------------------------------
-| 4. Auth Scaffolding (Laravel Breeze)
+| Authentication (Laravel Breeze)
 |--------------------------------------------------------------------------
 */
 require __DIR__ . '/auth.php';

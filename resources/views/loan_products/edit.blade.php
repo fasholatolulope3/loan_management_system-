@@ -1,81 +1,147 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Edit Loan Product: ') }} {{ $loanProduct->name }}
+            <h2 class="font-black text-xl text-gray-800 dark:text-slate-200 uppercase tracking-tighter">
+                ⚙️ {{ __('Modify Product Rules') }}: {{ $loanProduct->name }}
             </h2>
-            <a href="{{ route('loan-products.index') }}" class="text-sm text-gray-600 hover:underline">&larr; Back to
-                List</a>
+            <a href="{{ route('loan-products.index') }}"
+                class="text-sm font-bold text-slate-500 hover:text-indigo-600 transition no-print">
+                &larr; Return to Registry
+            </a>
         </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+
+            <!-- Policy Validation Feedback -->
+            @if ($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 shadow-md rounded-r-xl">
+                    <div class="flex items-center mb-2">
+                        <x-heroicon-s-exclamation-triangle class="w-5 h-5 mr-2" />
+                        <p class="font-bold uppercase text-xs">Business Rule Violation</p>
+                    </div>
+                    <ul class="list-disc pl-5 text-xs font-bold">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <div
+                class="bg-white dark:bg-slate-800 overflow-hidden shadow-2xl rounded-[2.5rem] border border-slate-100 dark:border-slate-700 p-8 md:p-12">
+                <div class="mb-8 border-b dark:border-slate-700 pb-6 flex justify-between items-end">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">Financial
+                            Parameters</h3>
+                        <p class="text-sm text-slate-500 italic">Adjusting these values will affect future loan
+                            applications.</p>
+                    </div>
+                    <span
+                        class="text-[10px] font-black px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-full border border-indigo-100 dark:border-indigo-900 uppercase">
+                        Product ID: #{{ str_pad($loanProduct->id, 3, '0', STR_PAD_LEFT) }}
+                    </span>
+                </div>
 
                 <form method="POST" action="{{ route('loan-products.update', $loanProduct) }}">
                     @csrf
                     @method('PATCH')
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Name -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+
+                        <!-- REQUIREMENT #2: Strict Name Mapping -->
                         <div class="md:col-span-2">
-                            <x-input-label for="name" :value="__('Product Name')" />
-                            <x-text-input id="name" name="name" class="block mt-1 w-full" type="text"
-                                :value="old('name', $loanProduct->name)" required />
+                            <x-input-label for="name" value="Product Category" />
+                            <select name="name" id="name" required
+                                class="block mt-1 w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="Daily"
+                                    {{ old('name', $loanProduct->name) == 'Daily' ? 'selected' : '' }}>Daily Payment
+                                    (10%)</option>
+                                <option value="Weekly"
+                                    {{ old('name', $loanProduct->name) == 'Weekly' ? 'selected' : '' }}>Weekly Payment
+                                    (20%)</option>
+                                <option value="Monthly"
+                                    {{ old('name', $loanProduct->name) == 'Monthly' ? 'selected' : '' }}>Monthly Payment
+                                    (30%)</option>
+                            </select>
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
-                        <!-- Interest Rate -->
+                        <!-- REQUIREMENT #3: Specific Interest Rates -->
                         <div>
-                            <x-input-label for="interest_rate" :value="__('Interest Rate (%)')" />
-                            <x-text-input name="interest_rate" class="block mt-1 w-full" type="number" step="0.01"
-                                :value="old('interest_rate', $loanProduct->interest_rate)" required />
+                            <x-input-label for="interest_rate" value="Annual Interest Rate (%)" />
+                            <x-text-input id="interest_rate" name="interest_rate"
+                                class="block mt-1 w-full dark:bg-slate-950 font-black text-indigo-600 text-lg"
+                                type="number" step="0.01" :value="old('interest_rate', $loanProduct->interest_rate)" required />
+                            <p class="mt-1 text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Required:
+                                Daily=10, Weekly=20, Monthly=30</p>
                         </div>
 
-                        <!-- Penalty Rate -->
+                        <!-- REQUIREMENT #1: The 0.005 Penalty Rate -->
                         <div>
-                            <x-input-label for="penalty_rate" :value="__('Penalty Rate (%)')" />
-                            <x-text-input name="penalty_rate" class="block mt-1 w-full" type="number" step="0.01"
-                                :value="old('penalty_rate', $loanProduct->penalty_rate)" required />
+                            <x-input-label for="penalty_rate" value="Late Fee Penalty (Rate)" />
+                            <x-text-input id="penalty_rate" name="penalty_rate"
+                                class="block mt-1 w-full dark:bg-slate-950 font-mono text-red-500 text-lg"
+                                type="number" step="0.0001" :value="old('penalty_rate', $loanProduct->penalty_rate)" required />
+                            <p class="mt-1 text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Current
+                                Corporate Policy: 0.005</p>
                         </div>
 
-                        <!-- Min Amount -->
-                        <div>
-                            <x-input-label for="min_amount" :value="__('Minimum Principal (₦)')" />
-                            <x-text-input name="min_amount" class="block mt-1 w-full" type="number" :value="old('min_amount', $loanProduct->min_amount)"
-                                required />
+                        <!-- Liquidity Bounds -->
+                        <div class="pt-4 border-t dark:border-slate-700 md:col-span-2 mt-4">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Capital
+                                Disbursement Limits</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <x-input-label for="min_amount" value="Min Principal (₦)" />
+                                    <x-text-input id="min_amount" name="min_amount"
+                                        class="block mt-1 w-full dark:bg-slate-950" type="number" :value="old('min_amount', $loanProduct->min_amount)"
+                                        required />
+                                </div>
+
+                                <div>
+                                    <x-input-label for="max_amount" value="Max Principal (₦)" />
+                                    <x-text-input id="max_amount" name="max_amount"
+                                        class="block mt-1 w-full dark:bg-slate-950 font-bold" type="number"
+                                        :value="old('max_amount', $loanProduct->max_amount)" required />
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Max Amount -->
+                        <!-- Duration Logic -->
                         <div>
-                            <x-input-label for="max_amount" :value="__('Maximum Principal (₦)')" />
-                            <x-text-input name="max_amount" class="block mt-1 w-full" type="number" :value="old('max_amount', $loanProduct->max_amount)"
-                                required />
+                            <x-input-label for="duration_months" value="Total Installments" />
+                            <x-text-input id="duration_months" name="duration_months"
+                                class="block mt-1 w-full dark:bg-slate-950" type="number" :value="old('duration_months', $loanProduct->duration_months)" required />
+                            <p class="mt-1 text-[10px] text-slate-500 italic leading-tight">Represents the total count
+                                of payments across the tenure.</p>
                         </div>
 
-                        <!-- Duration -->
+                        <!-- Lifecycle Status -->
                         <div>
-                            <x-input-label for="duration_months" :value="__('Duration (Months)')" />
-                            <x-text-input name="duration_months" class="block mt-1 w-full" type="number"
-                                :value="old('duration_months', $loanProduct->duration_months)" required />
-                        </div>
-
-                        <!-- Status -->
-                        <div>
-                            <x-input-label for="status" :value="__('Status')" />
-                            <select name="status" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="active" {{ $loanProduct->status == 'active' ? 'selected' : '' }}>Active
-                                </option>
-                                <option value="inactive" {{ $loanProduct->status == 'inactive' ? 'selected' : '' }}>
-                                    Inactive</option>
+                            <x-input-label for="status" value="Operational Status" />
+                            <select name="status" id="status"
+                                class="block mt-1 w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 rounded-xl shadow-sm">
+                                <option value="active"
+                                    {{ old('status', $loanProduct->status) == 'active' ? 'selected' : '' }}>Available
+                                    for Operations</option>
+                                <option value="inactive"
+                                    {{ old('status', $loanProduct->status) == 'inactive' ? 'selected' : '' }}>Registry
+                                    Only (Disabled)</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end mt-8 border-t pt-6">
-                        <x-primary-button>
-                            {{ __('Update Product Configuration') }}
+                    <!-- Final Submission -->
+                    <div class="mt-12 flex items-center justify-end border-t dark:border-slate-700 pt-8 gap-4">
+                        <x-secondary-button type="reset" class="px-6 py-4">
+                            Reset Fields
+                        </x-secondary-button>
+
+                        <x-primary-button
+                            class="px-12 py-4 bg-slate-900 dark:bg-white dark:text-slate-900 font-black uppercase tracking-widest text-xs shadow-2xl hover:scale-[1.02] transition transform active:scale-95">
+                            Update Registry Information
                         </x-primary-button>
                     </div>
                 </form>

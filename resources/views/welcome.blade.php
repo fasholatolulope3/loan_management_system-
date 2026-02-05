@@ -243,7 +243,7 @@
     <!-- Simple Footer -->
     <footer class="py-12 border-t dark:border-slate-800">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 opacity-60">
-            <span class="text-xs font-bold uppercase tracking-widest">© {{ date('Y') }} SMARTLOAN INC.</span>
+            <span class="text-xs font-bold uppercase tracking-widest">© {{ date('Y') }} GETLOAN INC.</span>
             <div class="flex gap-6 text-xs font-bold uppercase">
                 <a href="#">Privacy</a>
                 <a href="#">Terms</a>

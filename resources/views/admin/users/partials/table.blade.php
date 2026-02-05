@@ -60,6 +60,22 @@
                         </div>
                     </td>
                 </tr>
+                <th class="px-6 py-3 text-left text-xs font-black uppercase text-slate-500 tracking-widest">
+                    Assigned Center
+                </th>
+
+                <!-- Inside the foreach loop -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-gray-900 dark:text-white">
+                            {{ $user->collationCenter?->name ?? 'SYSTEM MASTER' }}
+                        </span>
+                        <span
+                            class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">
+                            {{ $user->collationCenter?->center_code ?? 'NO-ZONE' }}
+                        </span>
+                    </div>
+                </td>
             @empty
                 <tr>
                     <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">

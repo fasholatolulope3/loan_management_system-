@@ -2,64 +2,103 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{User, AuditLog};
+use App\Models\{User, CollationCenter, AuditLog};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Hash, Auth, DB};
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
-    public function index()
+    /**
+     * Requirement #6: Separate Admin interface for staff management.
+     * Requirement #5: Access to Collation Center data.
+     */
+    public function index(): View
     {
-        $users = User::latest()->paginate(10);
-        return view('admin.users.index', compact('users'));
+        // Eager load collationCenter to show branch names in the table
+        $users = User::with('collationCenter')->latest()->paginate(15);
+        $centers = CollationCenter::all();
+
+        return view('admin.users.index', compact('users', 'centers'));
     }
 
-    public function store(Request $request)
+    /**
+     * Requirement #5: Admin assigning Collation Centers to new officers.
+     */
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'phone' => 'required|unique:users,phone',
-            'role' => 'required|in:admin,officer', // Only allow adding staff
-            'password' => 'required|min:8|confirmed',
+            'phone' => 'required|string|unique:users,phone',
+            'role' => 'required|in:admin,officer',
+            'collation_center_id' => 'required|exists:collation_centers,id',
+            'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'role' => $validated['role'],
+            'collation_center_id' => $validated['collation_center_id'],
             'password' => Hash::make($validated['password']),
+            'status' => 'active',
         ]);
 
-        return redirect()->route('users.index')->with('success', 'Staff member added successfully.');
+        // Req #5: Log the authority trail
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'staff_created',
+            'description' => "Admin created {$user->role} ({$user->name}) and assigned to branch: " . $user->collationCenter->name,
+            'ip_address' => $request->ip()
+        ]);
+
+        return redirect()->route('users.index')->with('success', "Staff member '{$user->name}' deployed successfully.");
     }
 
-    public function update(Request $request, User $user)
+    /**
+     * Requirement #8: Status update and review cycle.
+     */
+    public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'name'   => 'required|string',
+            'name' => 'required|string|max:255',
             'status' => 'required|in:active,inactive,suspended',
+            'collation_center_id' => 'nullable|exists:collation_centers,id'
         ]);
 
         $user->update($validated);
-        return back()->with('success', 'User updated.');
-    }
-    public function hasCompletedKyc(): bool
-    {
-        // A user is verified if they have a client record and the national_id is filled
-        return $this->client()->exists() && !empty($this->client->national_id);
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'user_updated',
+            'description' => "Updated credentials/status for User #{$user->id}",
+            'ip_address' => $request->ip()
+        ]);
+
+        return back()->with('success', 'User profile updated successfully.');
     }
 
-    public function destroy(User $user)
+    /**
+     * Requirement: Block deletion of clients with active debt.
+     */
+    public function destroy(User $user): RedirectResponse
     {
+        // 1. Safety Guard: Do not delete yourself
+        if (Auth::id() === $user->id) {
+            return back()->with('error', 'Security Policy Error: You cannot delete your own account.');
+        }
+
+        // 2. Logic: canBeDeleted check (Uses the method in User.php model)
         if (!$user->canBeDeleted()) {
-            return back()->with('error', 'This client has active financial obligations and cannot be removed.');
+            return back()->with('error', 'Transaction Safety Error: This client has active financial obligations and cannot be removed.');
         }
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('users.index')->with('success', 'Credentials and access revoked.');
     }
 }

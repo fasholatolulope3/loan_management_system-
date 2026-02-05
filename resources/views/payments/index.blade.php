@@ -20,19 +20,29 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200">
                         @foreach ($payments as $payment)
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    {{ $payment->payment_date->format('d M Y H:i') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    {{ $payment->loan->client->user->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-                                    ₦{{ number_format($payment->amount_paid, 2) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm uppercase">{{ $payment->method }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $payment->reference }}
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 rounded text-[10px] font-black uppercase
+                {{ $payment->type === 'disbursement' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                                        {{ $payment->type === 'disbursement' ? 'Outgoing' : 'Incoming' }}
+                                    </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $payment->collector->name }}</td>
+                                <td class="px-6 py-4">
+                                    @if (auth()->user()->role === 'client')
+                                        <span
+                                            class="font-bold">{{ $payment->type === 'disbursement' ? 'Received Funds' : 'Repayment Sent' }}</span>
+                                    @else
+                                        <span
+                                            class="font-bold">{{ $payment->type === 'disbursement' ? 'Paid to Client' : 'Received from Client' }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 font-black">
+                                    {{ $payment->type === 'disbursement' ? '-' : '+' }}
+                                    ₦{{ number_format($payment->amount_paid, 2) }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
