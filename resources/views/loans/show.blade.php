@@ -240,6 +240,16 @@
                     <h3
                         class="text-sm font-black uppercase tracking-[0.2em] dark:text-white italic underline underline-offset-4 decoration-indigo-500/50 leading-none">
                         IV. Future Repayment Amortization</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="text-right">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Installments</p>
+                            <p class="text-sm font-black dark:text-white leading-none mt-1">{{ $loan->schedules->count() }} Payments</p>
+                        </div>
+                        <div class="text-right border-l dark:border-slate-700 pl-6">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Repayment</p>
+                            <p class="text-sm font-black text-indigo-600 dark:text-indigo-400 leading-none mt-1">₦{{ number_format($loan->schedules->sum('total_due'), 2) }}</p>
+                        </div>
+                    </div>
                 </div>
                 <table class="min-w-full divide-y divide-gray-100 dark:divide-slate-700">
                     <thead class="bg-slate-50 dark:bg-slate-900">
@@ -272,7 +282,9 @@
                                 $penalty = $schedule->principal_amount * 0.005 * $daysLate;
                             @endphp
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
-                                <td class="px-8 py-4 text-xs font-black text-slate-400">№ {{ $index + 1 }}</td>
+                                <td class="px-8 py-4 text-xs font-black text-slate-400">
+                                    {{ $index + 1 }} of {{ $loan->schedules->count() }}
+                                </td>
                                 <td class="px-6 py-4 text-xs font-bold dark:text-slate-300 uppercase leading-none">
                                     {{ $schedule->due_date->format('d M, Y') }}</td>
                                 <td class="px-6 py-4 text-xs font-medium dark:text-slate-400">

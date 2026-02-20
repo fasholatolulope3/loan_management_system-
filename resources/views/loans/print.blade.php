@@ -67,7 +67,8 @@
                     <p class="text-xl font-bold italic">{{ str_pad($loan->id, 6, '0', STR_PAD_LEFT) }}</p>
                 </div>
                 <p class="text-xs text-slate-500 font-bold uppercase">Date Created:
-                    {{ $loan->created_at->format('d/m/Y') }}</p>
+                    {{ $loan->created_at->format('d/m/Y') }}
+                </p>
             </div>
         </header>
 
@@ -78,7 +79,8 @@
                     Information about Applicant</h3>
                 <div class="space-y-1 text-sm">
                     <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Surname / First Name</span>
-                        <span class="font-bold">{{ $loan->client?->user?->name }}</span></p>
+                        <span class="font-bold">{{ $loan->client?->user?->name }}</span>
+                    </p>
                     <p><span class="text-slate-500 uppercase text-[10px] font-bold block">National ID / NIN</span> <span
                             class="font-mono">{{ $loan->client?->national_id }}</span></p>
                     <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Date of Birth / Residence
@@ -101,7 +103,8 @@
                     </p>
                     <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Location / Tenure</span>
                         {{ $loan->business_location }} (Since:
-                        {{ optional($loan->business_start_date)->format('Y') }})</p>
+                        {{ optional($loan->business_start_date)->format('Y') }})
+                    </p>
                     <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Premises Ownership</span>
                         {{ strtoupper($loan->business_premise_type ?? 'N/A') }}</p>
                     <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Workforce</span>
@@ -174,7 +177,8 @@
                     <tr class="bg-indigo-50 font-black">
                         <td>TOTAL ASSETS</td>
                         <td class="text-right text-indigo-700">
-                            {{ number_format($loan->current_assets + $loan->fixed_assets, 2) }}</td>
+                            {{ number_format($loan->current_assets + $loan->fixed_assets, 2) }}
+                        </td>
                     </tr>
                     <tr>
                         <td>TOTAL LIABILITIES</td>
@@ -211,7 +215,8 @@
                             <td class="uppercase">{{ $c->type }}</td>
                             <td>{{ $c->description }}</td>
                             <td class="text-right text-slate-400 italic">
-                                {{ number_format($c->purchase_price ?? 0, 2) }}</td>
+                                {{ number_format($c->purchase_price ?? 0, 2) }}
+                            </td>
                             <td class="font-bold text-right">{{ number_format($c->market_value, 2) }}</td>
                             <td class="font-black text-right text-amber-700">
                                 ₦{{ number_format($c->liquidation_value, 2) }}</td>
@@ -247,11 +252,56 @@
                     <div>
                         <span class="text-slate-500 uppercase text-[9px] font-black block">Officer Recommendation</span>
                         <p class="text-[10px] italic leading-snug">"Client qualifies under the
-                            {{ $loan->product?->name }} loan product rules."</p>
+                            {{ $loan->product?->name }} loan product rules."
+                        </p>
                     </div>
                 </div>
             </section>
         @endif
+
+        <!-- SECTION VII: AMORTIZATION LEDGER -->
+        <section class="mb-12">
+            <h3 class="bg-indigo-900 text-white px-3 py-1 text-xs font-black uppercase tracking-widest mb-2">VII. Future
+                Repayment Schedule (Amortization)</h3>
+            <table class="w-full assessment-table">
+                <thead class="bg-slate-50 text-[10px] font-black uppercase">
+                    <tr>
+                        <th class="text-center">Inst.</th>
+                        <th>Due Date</th>
+                        <th class="text-right">Principal</th>
+                        <th class="text-right">Interest</th>
+                        <th class="text-right">Total Installment</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($loan->schedules as $index => $s)
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">{{ $index + 1 }} of
+                                {{ $loan->schedules->count() }}</td>
+                            <td class="font-bold">{{ $s->due_date->format('d M, Y') }}</td>
+                            <td class="text-right font-medium text-slate-600 italic">
+                                ₦{{ number_format($s->principal_amount, 2) }}</td>
+                            <td class="text-right font-medium text-slate-600 italic">
+                                ₦{{ number_format($s->interest_amount, 2) }}</td>
+                            <td class="text-right font-black text-slate-900">₦{{ number_format($s->total_due, 2) }}</td>
+                            <td class="text-center">
+                                <span
+                                    class="uppercase text-[9px] font-black {{ $s->status === 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
+                                    [{{ $s->status }}]
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                    <tr class="bg-indigo-50 font-black">
+                        <td colspan="4" class="text-right text-[10px] py-3">GRAND TOTAL REPAYMENT:</td>
+                        <td class="text-right text-indigo-900 text-sm italic">
+                            ₦{{ number_format($loan->schedules->sum('total_due'), 2) }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
 
         <!-- FINAL SIGN OFF: GOVERNANCE -->
         <footer class="pt-8 border-t-2 border-dashed border-slate-300 grid grid-cols-2 gap-20">
@@ -259,7 +309,8 @@
                 <div class="border-b border-black mb-1 h-12"></div>
                 <p class="text-[9px] font-black uppercase">Loan Officer (Site Investigator)</p>
                 <p class="text-sm font-bold mt-1 tracking-tighter underline underline-offset-4">
-                    {{ auth()->user()->name }}</p>
+                    {{ auth()->user()->name }}
+                </p>
             </div>
             <div class="text-center">
                 <div

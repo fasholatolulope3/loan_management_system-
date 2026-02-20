@@ -22,19 +22,9 @@
             class="flex items-center justify-between h-20 px-6 bg-slate-950/50 backdrop-blur-sm border-b border-white/5">
             <div x-show="!collapsed" class="flex items-center justify-center w-full transition-all">
                 <div
-                    class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white/5 rounded-xl border border-white/10">
-                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-2">
-                        <path d="M50 20 L80 80 L20 80 Z" fill="none" stroke="#ffffff" stroke-width="8"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                        <g transform="translate(80, 25)">
-                            <line x1="0" y1="0" x2="-8" y2="-12" stroke="#e63946" stroke-width="4"
-                                stroke-linecap="round" />
-                            <line x1="0" y1="0" x2="0" y2="-15" stroke="#e63946" stroke-width="4"
-                                stroke-linecap="round" />
-                            <line x1="0" y1="0" x2="8" y2="-12" stroke="#e63946" stroke-width="4"
-                                stroke-linecap="round" />
-                        </g>
-                    </svg>
+                    class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+                    <img src="{{ asset('assets/images/logo.jpeg') }}" alt="{{ config('app.name', 'PDEI') }}"
+                        class="w-full h-auto">
                 </div>
             </div>
             <button @click="collapsed = !collapsed"
