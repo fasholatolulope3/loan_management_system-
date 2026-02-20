@@ -36,21 +36,14 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
-                        <!-- REQUIREMENT #2: Name Category Selection -->
+                        <!-- REQUIREMENT #2: Descriptive names allowed -->
                         <div class="md:col-span-2">
-                            <x-input-label for="name" value="Loan Product Category" />
-                            <select name="name" id="name" required
-                                class="block mt-1 w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">-- Choose Category --</option>
-                                <option value="Daily" {{ old('name') == 'Daily' ? 'selected' : '' }}>Daily Loan
-                                    (Interval: 1 Day)</option>
-                                <option value="Weekly" {{ old('name') == 'Weekly' ? 'selected' : '' }}>Weekly Loan
-                                    (Interval: 7 Days)</option>
-                                <option value="Monthly" {{ old('name') == 'Monthly' ? 'selected' : '' }}>Monthly Loan
-                                    (Interval: 1 Month)</option>
-                            </select>
-                            <p class="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Choose
-                                'Daily' (10%), 'Weekly' (20%), or 'Monthly' (30%)</p>
+                            <x-input-label for="name" value="Product Name/Tier" />
+                            <x-text-input id="name" name="name" class="block mt-1 w-full" type="text"
+                                :value="old('name')" placeholder="e.g. Weekly - 4 Weeks" required />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                            <p class="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">
+                                Protocol: Annual Rate is fixed at 10% (Daily), 10-30% (Weekly/Monthly) per tenure.</p>
                         </div>
 
                         <!-- REQUIREMENT #3: Interest Rate -->
@@ -88,7 +81,8 @@
                         <div>
                             <x-input-label for="duration_months" value="Number of Repayments" />
                             <x-text-input name="duration_months" class="block mt-1 w-full dark:bg-slate-950"
-                                type="number" :value="old('duration_months')" required placeholder="Total installments" />
+                                type="number" :value="old('duration_months')" required
+                                placeholder="Total installments" />
                             <p class="mt-1 text-[10px] text-slate-500">e.g. 12 days for Daily, 4 weeks for Weekly.</p>
                         </div>
 

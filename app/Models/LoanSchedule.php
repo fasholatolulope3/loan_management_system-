@@ -28,6 +28,24 @@ class LoanSchedule extends Model
     {
         return $this->belongsTo(Loan::class);
     }
+
+    /**
+     * Requirement #1: Dynamic 0.005 Penalty calculation logic
+     */
+    public function getAccruedPenaltyAttribute(): float
+    {
+        if ($this->status === 'paid' || now() <= $this->due_date) {
+            return 0;
+        }
+
+        $daysLate = now()->diffInDays($this->due_date);
+        return (float) $this->principal_amount * 0.005 * $daysLate;
+    }
+
+    public function getTotalDueWithPenaltyAttribute(): float
+    {
+        return (float) $this->total_due + $this->accrued_penalty;
+    }
     public function payments()
     {
         return $this->hasMany(Payment::class, 'schedule_id');

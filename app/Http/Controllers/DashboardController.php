@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\LoanSchedule;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 use App\Models\{Loan, Client, User, Payment};
 
 class DashboardController extends Controller
@@ -13,55 +15,54 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         return match ($user->role) {
-            'admin'   => $this->adminDashboard(),
+            'admin' => $this->adminDashboard(),
             'officer' => $this->officerDashboard(),
-            'client'  => $this->clientDashboard(),
-            default   => abort(403),
+            'client' => $this->clientDashboard(),
+            default => abort(403),
         };
     }
 
     private function adminDashboard()
     {
         $stats = [
-            // 1. Capital Deployment (Money leaving the company)
-            'total_disbursed' => Payment::where('type', 'disbursement')
-                ->sum('amount_paid'),
-
-            // 2. Revenue Collection (Money successfully returned)
-            'total_repayments' => Payment::where('type', 'repayment')
-                ->where('verification_status', 'verified')
-                ->sum('amount_paid'),
-
-            // 3. Unverified Revenue (Money clients claim to have paid, awaiting staff check)
-            'pending_reviews' => Payment::where('type', 'repayment')
-                ->where('verification_status', 'pending')
-                ->count(),
-
-            // 4. Operational Portfolio (Total unique borrowers)
-            'total_clients'   => Client::count(),
-
-            // 5. Workload Queue (The missing key that caused the crash)
-            'pending_loans'   => Loan::where('status', 'pending')->count(),
-
-            // 6. User Activity Feed (For the table at the bottom)
-            'recent_users'    => User::latest()->take(5)->get(),
+            'total_disbursed' => (float) Payment::where('type', 'disbursement')->sum('amount_paid'),
+            'total_repayments' => (float) Payment::where('type', 'repayment')->where('verification_status', 'verified')->sum('amount_paid'),
+            'pending_verifications' => Payment::where('type', 'repayment')->where('verification_status', 'pending')->count(),
+            'active_loans' => Loan::where('status', 'active')->count(),
+            'pending_loans' => Loan::where('status', 'pending')->count(),
+            'arrears_count' => LoanSchedule::where('status', '!=', 'paid')->where('due_date', '<', now())->count(),
+            'recent_loans' => Loan::with('client.user', 'product')->latest()->take(5)->get(),
         ];
 
-        return view('dashboard.admin', compact('stats'));
+        return view('dashboard', compact('stats'));
     }
 
     private function officerDashboard()
-
     {
+        $user = Auth::user();
+        $centerId = $user->collation_center_id;
+
         $stats = [
-            'my_pending_approvals' => Loan::where('status', 'pending')->count(),
-            'active_loans'         => Loan::where('status', 'active')->count(),
-            'today_payments'       => Payment::whereDate('payment_date', now())->sum('amount_paid'),
+            'total_disbursed' => (float) Payment::where('type', 'disbursement')
+                ->whereHas('loan', fn($q) => $q->where('collation_center_id', $centerId))
+                ->sum('amount_paid'),
+            'total_repayments' => (float) Payment::where('type', 'repayment')
+                ->where('verification_status', 'verified')
+                ->whereHas('loan', fn($q) => $q->where('collation_center_id', $centerId))
+                ->sum('amount_paid'),
+            'active_loans' => Loan::where('status', 'active')->where('collation_center_id', $centerId)->count(),
+            'pending_loans' => Loan::where('status', 'pending')->where('collation_center_id', $centerId)->count(),
+            'arrears_count' => LoanSchedule::where('status', '!=', 'paid')
+                ->where('due_date', '<', now())
+                ->whereHas('loan', fn($q) => $q->where('collation_center_id', $centerId))
+                ->count(),
+            'recent_loans' => Loan::with('client.user', 'product')->where('collation_center_id', $centerId)->latest()->take(5)->get(),
         ];
-        return view('dashboard.officer', compact('stats'));
+
+        return view('dashboard', compact('stats'));
     }
 
-    // app/Http/Controllers/DashboardController.php
+
 
     private function clientDashboard()
     {
@@ -100,15 +101,15 @@ class DashboardController extends Controller
 
         // The key "total_balance" is now explicitly added to this array
         $stats = [
-            'funds_received'   => $fundsReceived,
-            'total_repaid'     => $totalRepaid,
-            'total_balance'    => $totalBalance, // This was missing
+            'funds_received' => $fundsReceived,
+            'total_repaid' => $totalRepaid,
+            'total_balance' => $totalBalance, // This was missing
             'upcoming_payment' => $nextInstallment,
         ];
 
         return view('dashboard.client', compact('stats'));
     }
-    // app/Http/Controllers/DashboardController.php
+
 
     /**
      * Display system settings (Admin only)
@@ -121,17 +122,32 @@ class DashboardController extends Controller
     /**
      * Display financial reports (Admin only)
      */
-    public function reports()
+    public function reports(): View
     {
-        $reportData = [
-            'total_loans' => Loan::count(),
-            'active_principal' => Loan::where('status', 'active')->sum('amount'),
-            'total_collected' => Payment::sum('amount_paid'),
-            'repayment_rate' => LoanSchedule::count() > 0
-                ? (LoanSchedule::where('status', 'paid')->count() / LoanSchedule::count()) * 100
-                : 0,
+        $user = Auth::user();
+        $isStaff = $user->role === 'officer';
+        $centerId = $user->collation_center_id;
+
+        // Base Queries scoped by role/center
+        $loanQuery = Loan::query();
+        $paymentQuery = Payment::query();
+        $arrearsQuery = LoanSchedule::where('status', '!=', 'paid')->where('due_date', '<', now());
+
+        if ($isStaff && $centerId) {
+            $loanQuery->where('collation_center_id', $centerId);
+            $paymentQuery->whereHas('loan', fn($q) => $q->where('collation_center_id', $centerId));
+            $arrearsQuery->whereHas('loan', fn($q) => $q->where('collation_center_id', $centerId));
+        }
+
+        $stats = [
+            'total_disbursed' => (float) $paymentQuery->where('type', 'disbursement')->sum('amount_paid'),
+            'total_collected' => (float) $paymentQuery->where('type', 'repayment')->sum('amount_paid'),
+            'active_loans' => $loanQuery->where('status', 'active')->count(),
+            'pending_reviews' => $loanQuery->where('status', 'pending')->count(),
+            'arrears_count' => $arrearsQuery->count(),
+            'recent_loans' => $loanQuery->with('client.user', 'product')->latest()->take(5)->get(),
         ];
 
-        return view('admin.reports', compact('reportData'));
+        return view('dashboard', compact('stats'));
     }
 }

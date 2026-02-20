@@ -75,6 +75,21 @@ class Loan extends Model
         'approved_by'
     ];
 
+    public function totalArrearsAmount(): float
+    {
+        return (float) $this->schedules()
+            ->where('status', '!=', 'paid')
+            ->where('due_date', '<', now())
+            ->sum('total_due');
+    }
+
+    public function currentPenaltyAccrued(): float
+    {
+        return (float) $this->schedules()
+            ->get()
+            ->sum('accrued_penalty');
+    }
+
     protected $casts = [
         // 1. Core Timeline
         'start_date' => 'date',
@@ -119,31 +134,6 @@ class Loan extends Model
     | Financial Business Logic Helpers
     |--------------------------------------------------------------------------
     */
-    public function totalArrearsAmount()
-    {
-        return $this->schedules()
-            ->where('status', '!=', 'paid')
-            ->where('due_date', '<', now())
-            ->sum('total_due');
-    }
-    /**
-     * Requirement #1 & #9: Calculate Total Penalty Accrued
-     * Logic: Overdue installments * 0.005 per day.
-     */
-    public function currentPenaltyAccrued()
-    {
-        $overdueSchedules = $this->schedules()
-            ->where('status', '!=', 'paid')
-            ->where('due_date', '<', now())
-            ->get();
-
-        $totalPenalty = 0;
-        foreach ($overdueSchedules as $schedule) {
-            $daysPast = now()->diffInDays($schedule->due_date);
-            $totalPenalty += ($schedule->principal_amount * 0.005 * $daysPast);
-        }
-        return $totalPenalty;
-    }
 
 
     /**

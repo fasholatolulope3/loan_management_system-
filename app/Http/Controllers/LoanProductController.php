@@ -35,20 +35,14 @@ class LoanProductController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // Requirement #3: Fixed Rate Map (Daily: 10, Weekly: 20, Monthly: 30)
-        $requiredRates = [
-            'Daily' => 10.00,
-            'Weekly' => 20.00,
-            'Monthly' => 30.00
-        ];
-
         $validated = $request->validate([
-            // Req #2: Explicit Categories
-            'name' => 'required|string|in:Daily,Weekly,Monthly|unique:loan_products,name',
+            // Req #2: Descriptive names allowed
+            'name' => 'required|string|unique:loan_products,name',
 
-            // Generic numeric validation (we check exact value below)
-            'interest_rate' => 'required|numeric',
+            // Generic numeric validation
+            'interest_rate' => 'required|numeric|min:0',
 
-            // Req #1: Defaulting to 0.005 (handled in UI, enforced here)
+            // Req #1: Defaulting to 0.005
             'penalty_rate' => 'required|numeric|min:0.005',
 
             'min_amount' => 'required|numeric|min:1',
@@ -56,13 +50,6 @@ class LoanProductController extends Controller
             'duration_months' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
         ]);
-
-        // STRICTOR CHECK: Ensure Requirement #3 is followed exactly
-        if ((float) $validated['interest_rate'] !== (float) $requiredRates[$validated['name']]) {
-            return back()->withErrors([
-                'interest_rate' => "Per policy, a {$validated['name']} loan must carry an interest rate of exactly {$requiredRates[$validated['name']]}%."
-            ])->withInput();
-        }
 
         // 1. Atomic Persistence
         $product = LoanProduct::create($validated);
@@ -90,16 +77,22 @@ class LoanProductController extends Controller
     public function update(Request $request, LoanProduct $loanProduct): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|in:Daily,Weekly,Monthly|unique:loan_products,name,' . $loanProduct->id,
-            'interest_rate' => 'required|numeric|min:0',
-            'penalty_rate' => 'required|numeric|min:0',
+            'name' => 'required|string|unique:loan_products,name,' . $loanProduct->id,
+            // interest_rate and penalty_rate are IMMUTABLE per user request
             'min_amount' => 'required|numeric|min:1',
             'max_amount' => 'required|numeric|gt:min_amount',
             'duration_months' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
         ]);
 
-        $loanProduct->update($validated);
+        // Only update fields that are allowed to change
+        $loanProduct->update($request->only([
+            'name',
+            'min_amount',
+            'max_amount',
+            'duration_months',
+            'status'
+        ]));
 
         AuditLog::create([
             'user_id' => Auth::id(),

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{DB, Auth};
 use App\Models\{Loan, Client, Payment, AuditLog, LoanProduct, LoanSchedule, Collateral};
- 
+
 
 class LoanController extends Controller
 {
@@ -54,58 +54,71 @@ class LoanController extends Controller
     {
         $staff = Auth::user();
 
-        // 🚩 SENIOR FIX: Validate Staff Assignment
-        if (!$staff->collation_center_id) {
-            return back()->with('error', 'FATAL: Your account is not assigned to any Collation Center. Please contact the System Admin to assign you to a branch before initiating loans.')->withInput();
+        // 🚩 AUTHORITY VERIFICATION: Validate Staff Assignment
+        if (!$staff->collation_center_id && $staff->role !== 'admin') {
+            return back()->with('error', 'FATAL: Account is not assigned to a Collation Center branch. Engagement blocked.')->withInput();
         }
+
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'loan_product_id' => 'required|exists:loan_products,id',
             'amount' => 'required|numeric|min:1000',
 
-            // Applicant Business Info (Part II)
+            // Applicant Business Profile (Part I)
             'business_name' => 'required|string|max:255',
             'business_location' => 'required|string',
             'business_premise_type' => 'required|in:own,rent',
             'business_start_date' => 'required|date',
 
-            // Cash Flow Metrics (From Form Tables)
+            // Applicant Financials (Part II)
             'monthly_sales' => 'required|numeric',
             'cost_of_sales' => 'required|numeric',
             'operational_expenses' => 'required|numeric',
             'family_expenses' => 'required|numeric',
-            'other_net_income' => 'nullable|numeric',
-
-            // Asset & Liability Metrics
             'current_assets' => 'required|numeric',
             'fixed_assets' => 'required|numeric',
             'total_liabilities' => 'required|numeric',
 
-            // JSON data structures for repeating form tables
-            'daily_sales_logs' => 'nullable|array',
-            'inventory_details' => 'nullable|array',
-            'business_references' => 'nullable|array',
-            'risk_mitigation' => 'nullable|array',
-            'collaterals' => 'required|array|min:1',
+            // Guarantor Section (Part III)
+            'guarantor_id' => 'nullable|exists:guarantors,id',
+            'g_name' => 'nullable|string|required_without:guarantor_id',
+            'g_relationship' => 'nullable|string|required_without:guarantor_id',
+            'g_monthly_income' => 'nullable|numeric',
+            'g_monthly_expenses' => 'nullable|numeric',
+            'g_net_worth' => 'nullable|numeric',
+            'g_income_source' => 'nullable|string',
 
-            // Proposal & Guarantor Info (Part III & IV)
-            'proposal_summary' => 'required|string|min:20',
-            'guarantor_id' => 'required|exists:guarantors,id', // From pre-filled registry
-            'guarantor_business_info' => 'nullable|string',
+            // Final Evaluation
+            'collaterals' => 'required|array|min:1',
+            'proposal_summary' => 'required|string|min:40',
         ]);
 
-        return DB::transaction(function () use ($request) {
-            $product = LoanProduct::find($request->loan_product_id);
+        return DB::transaction(function () use ($request, $staff) {
+            $product = LoanProduct::findOrFail($request->loan_product_id);
 
-            // Automated Calculations (Payment Capacity & Equity)
+            // 1. Resolve Guarantor Identity
+            $guarantorId = $request->guarantor_id;
+            if (!$guarantorId && $request->g_name) {
+                $newGuarantor = \App\Models\Guarantor::create([
+                    'name' => $request->g_name,
+                    'phone' => '0000000000', // To be updated by staff later
+                    'address' => 'Pending Confirmation',
+                    'occupation' => $request->g_income_source ?? 'Unknown',
+                ]);
+                $guarantorId = $newGuarantor->id;
+            }
+
+            // 2. Automated Underwriting Metrics
             $grossProfit = $request->monthly_sales - $request->cost_of_sales;
             $netProfit = $grossProfit - $request->operational_expenses;
-            $paymentCapacity = $netProfit + ($request->other_net_income ?? 0) - $request->family_expenses;
+            $paymentCapacity = $netProfit - $request->family_expenses;
             $equity = ($request->current_assets + $request->fixed_assets) - $request->total_liabilities;
 
+            // 3. Persistent Credit File Creation
             $loan = Loan::create([
-                'collation_center_id' => Auth::user()->collation_center_id,
+                'collation_center_id' => $staff->collation_center_id ?? Loan::first()?->collation_center_id, // Fallback for testing
                 'client_id' => $request->client_id,
+                'guarantor_id' => $guarantorId,
                 'loan_product_id' => $product->id,
                 'amount' => $request->amount,
                 'interest_rate' => $product->interest_rate,
@@ -113,10 +126,12 @@ class LoanController extends Controller
                 'status' => 'pending',
                 'approval_status' => 'pending_review',
 
+                // Business Metadata
                 'business_name' => $request->business_name,
                 'business_location' => $request->business_location,
                 'business_start_date' => $request->business_start_date,
 
+                // Financial Snapshots
                 'monthly_sales' => $request->monthly_sales,
                 'cost_of_sales' => $request->cost_of_sales,
                 'gross_profit' => $grossProfit,
@@ -124,31 +139,108 @@ class LoanController extends Controller
                 'net_profit' => $netProfit,
                 'payment_capacity' => $paymentCapacity,
                 'equity_value' => $equity,
+                'current_assets' => $request->current_assets,
+                'fixed_assets' => $request->fixed_assets,
+                'total_liabilities' => $request->total_liabilities,
+
+                // Guarantor Snapshot (Req #7 - Part III)
+                'guarantor_business_financials' => [
+                    'income' => $request->g_monthly_income,
+                    'expenses' => $request->g_monthly_expenses,
+                    'net_worth' => $request->g_net_worth,
+                    'source' => $request->g_income_source,
+                    'relationship' => $request->g_relationship
+                ],
 
                 'proposal_summary' => $request->proposal_summary,
-                'daily_sales_logs' => $request->daily_sales_logs,
-                'inventory_details' => $request->inventory_details,
-                'business_references' => $request->business_references,
             ]);
 
-            // Save Collateral (Requirement #7 - From Form CF5)
+            // 4. Detailed Asset Registry (Req #7 - Part IV)
             foreach ($request->collaterals as $c) {
                 $loan->collaterals()->create([
                     'type' => $c['type'],
                     'description' => $c['description'],
                     'market_value' => $c['market_value'],
-                    'liquidation_value' => $c['market_value'] * 0.70, // Standard 70% rule
+                    'liquidation_value' => $c['market_value'] * 0.70,
                 ]);
             }
 
             AuditLog::create([
                 'user_id' => Auth::id(),
                 'action' => 'loan_proposal_submitted',
-                'description' => "Officer submitted loan proposal for {$request->business_name}. Capacity: ₦{$paymentCapacity}",
+                'description' => "Officer initiated Credit File for {$request->business_name}. Capacity: ₦" . number_format($paymentCapacity, 2),
                 'ip_address' => $request->ip()
             ]);
 
-            return redirect()->route('loans.index')->with('success', 'Credit File submitted for Admin review.');
+            return redirect()->route('loans.index')->with('success', 'Credit File submitted for Executive Review.');
+        });
+    }
+
+    public function edit(Loan $loan): View
+    {
+        if (!in_array($loan->approval_status, ['pending_review', 'adjustment_needed'])) {
+            abort(403, 'Loan is not in an editable state.');
+        }
+
+        $products = LoanProduct::where('status', 'active')->get();
+        $clients = Client::with('user')->get();
+        $loan->load(['collaterals', 'guarantor']);
+
+        return view('loans.edit', compact('loan', 'products', 'clients'));
+    }
+
+    public function update(Request $request, Loan $loan): RedirectResponse
+    {
+        if (!in_array($loan->approval_status, ['pending_review', 'adjustment_needed'])) {
+            abort(403, 'Loan is not in an editable state.');
+        }
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1000',
+            'business_name' => 'required|string|max:255',
+            'business_location' => 'required|string',
+            'monthly_sales' => 'required|numeric',
+            'cost_of_sales' => 'required|numeric',
+            'operational_expenses' => 'required|numeric',
+            'family_expenses' => 'required|numeric',
+            'current_assets' => 'required|numeric',
+            'fixed_assets' => 'required|numeric',
+            'total_liabilities' => 'required|numeric',
+            'proposal_summary' => 'required|string|min:40',
+        ]);
+
+        return DB::transaction(function () use ($request, $loan) {
+            $grossProfit = $request->monthly_sales - $request->cost_of_sales;
+            $netProfit = $grossProfit - $request->operational_expenses;
+            $paymentCapacity = $netProfit - $request->family_expenses;
+            $equity = ($request->current_assets + $request->fixed_assets) - $request->total_liabilities;
+
+            $loan->update([
+                'amount' => $request->amount,
+                'business_name' => $request->business_name,
+                'business_location' => $request->business_location,
+                'monthly_sales' => $request->monthly_sales,
+                'cost_of_sales' => $request->cost_of_sales,
+                'gross_profit' => $grossProfit,
+                'operational_expenses' => $request->operational_expenses,
+                'net_profit' => $netProfit,
+                'payment_capacity' => $paymentCapacity,
+                'equity_value' => $equity,
+                'current_assets' => $request->current_assets,
+                'fixed_assets' => $request->fixed_assets,
+                'total_liabilities' => $request->total_liabilities,
+                'proposal_summary' => $request->proposal_summary,
+                'approval_status' => 'pending_review',
+            ]);
+
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'loan_proposal_adjusted',
+                'description' => "Officer adjusted Credit File for {$loan->business_name} after review feedback.",
+                'ip_address' => $request->ip()
+            ]);
+
+            return redirect()->route('loans.show', $loan)->with('success', 'Credit File has been updated and re-submitted for review.');
         });
     }
 
@@ -157,8 +249,9 @@ class LoanController extends Controller
      */
     public function approve(Loan $loan): RedirectResponse
     {
-        if (Auth::user()->role !== 'admin')
-            abort(403);
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Executive Authorization Required.');
+        }
 
         return DB::transaction(function () use ($loan) {
             $loan->update([
@@ -174,35 +267,63 @@ class LoanController extends Controller
                 'type' => 'disbursement',
                 'amount_paid' => $loan->amount,
                 'method' => 'transfer',
-                'reference' => 'DISB-' . strtoupper(Str::random(8)),
+                'reference' => 'DISB-' . strtoupper(Str::random(10)),
                 'verification_status' => 'verified',
                 'payment_date' => now(),
                 'captured_by' => Auth::id()
             ]);
 
-            // 2. Interval Amortization (Requirement #2 & #3)
-            $totalPayable = $loan->amount + ($loan->amount * ($loan->interest_rate / 100));
-            $installment = $totalPayable / $loan->duration_months;
-            $interval = strtolower($loan->product->name);
+            // 2. Amortization Computation (Req #1, #2, #3)
+            $interestTotal = $loan->amount * ($loan->interest_rate / 100);
+            $totalPayable = $loan->amount + $interestTotal;
+            $duration = $loan->duration_months;
+            $installmentAmount = $totalPayable / $duration;
 
-            for ($i = 1; $i <= $loan->duration_months; $i++) {
-                $dueDate = match ($interval) {
-                    'daily' => now()->addDays($i),
-                    'weekly' => now()->addWeeks($i),
-                    default => now()->addMonths($i),
-                };
+            $productName = strtolower($loan->product->name);
+            $intervalType = 'monthly'; // default
+
+            if (str_starts_with($productName, 'daily'))
+                $intervalType = 'daily';
+            elseif (str_starts_with($productName, 'weekly'))
+                $intervalType = 'weekly';
+            elseif (str_starts_with($productName, 'monthly'))
+                $intervalType = 'monthly';
+
+            $currentDate = now();
+            for ($i = 1; $i <= $duration; $i++) {
+                if ($intervalType === 'daily') {
+                    // Logic for Daily "Working Days" (Skip Sat/Sun)
+                    $currentDate->addDay();
+                    while ($currentDate->isWeekend()) {
+                        $currentDate->addDay();
+                    }
+                    $dueDate = $currentDate->copy();
+                } else {
+                    $dueDate = match ($intervalType) {
+                        'weekly' => now()->addWeeks($i),
+                        'monthly' => now()->addMonths($i),
+                        default => now()->addMonths($i),
+                    };
+                }
 
                 LoanSchedule::create([
                     'loan_id' => $loan->id,
                     'due_date' => $dueDate,
-                    'principal_amount' => $loan->amount / $loan->duration_months,
-                    'interest_amount' => ($loan->amount * ($loan->interest_rate / 100)) / $loan->duration_months,
-                    'total_due' => $installment,
+                    'principal_amount' => $loan->amount / $duration,
+                    'interest_amount' => $interestTotal / $duration,
+                    'total_due' => $installmentAmount,
                     'status' => 'pending'
                 ]);
             }
 
-            return back()->with('success', "Disbursement authorized via " . ucfirst($interval) . " Repayment Schedule.");
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'loan_approved',
+                'description' => "Admin authorized disbursement of ₦" . number_format((float) $loan->amount, 2) . " for {$loan->business_name}.",
+                'ip_address' => request()->ip()
+            ]);
+
+            return back()->with('success', "Executive Authorization granted. " . ucfirst($intervalType) . " Repayment Schedule generated.");
         });
     }
 
@@ -221,18 +342,34 @@ class LoanController extends Controller
         return back()->with('warning', 'Loan File sent back to field officer for adjustments.');
     }
 
-    /**
-     * Requirement #9: Arrears & Penalty Search
-     */
     public function arrears(Request $request): View
     {
+        $user = Auth::user();
         $query = LoanSchedule::where('status', '!=', 'paid')
             ->where('due_date', '<', now())
-            ->with(['loan.client.user', 'loan.collationCenter']);
+            ->with(['loan.client.user', 'loan.collationCenter.officers']);
 
-        // Requirement #1: Dynamic 0.005 Penalty calculation logic applied in the view via accessor
+        // 1. ROLE-BASED SCOPING (Req #9)
+        if ($user->role === 'officer' && $user->collation_center_id) {
+            $query->whereHas('loan', function ($q) use ($user) {
+                $q->where('collation_center_id', $user->collation_center_id);
+            });
+        }
 
-        $arrears = $query->latest('due_date')->paginate(20);
+        // 2. SEARCH & TRACING (Req #9)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('loan.client.user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            })->orWhereHas('loan.collationCenter', function ($q) use ($search) {
+                $q->where('center_code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        $arrears = $query->latest('due_date')->paginate(30);
+
         return view('reports.arrears', compact('arrears'));
     }
 

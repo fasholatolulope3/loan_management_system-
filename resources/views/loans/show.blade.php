@@ -21,20 +21,32 @@
             <!-- REQUIREMENT #8: Governance Actions -->
             @if ($loan->status === 'pending' && auth()->user()->role !== 'client')
                 <div class="flex gap-2" x-data="{ showAdjustment: false }">
-                    <!-- Request Adjustment Trigger -->
-                    <button @click="showAdjustment = true"
-                        class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg shadow-amber-200 dark:shadow-none">
-                        Request Adjustment
-                    </button>
-                    <a href="{{ route('loans.print', $loan->id) }}" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg shadow-amber-200 dark:shadow-none">Print Document</a>
-
-                    <form action="{{ route('loans.approve', $loan) }}" method="POST">
-                        @csrf @method('PATCH')
-                        <button
+                    
+                    <!-- Staff Action: Edit for Adjustment -->
+                    @if($loan->approval_status === 'adjustment_needed' && auth()->user()->role === 'officer')
+                        <a href="{{ route('loans.edit', $loan) }}" 
                             class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg shadow-indigo-500/20">
-                            Authorize & Disburse
+                            Apply Adjustments
+                        </a>
+                    @endif
+
+                    @if(auth()->user()->role === 'admin')
+                        <!-- Admin Action: Request Adjustment Trigger -->
+                        <button @click="showAdjustment = true"
+                            class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg shadow-amber-200 dark:shadow-none">
+                            Request Adjustment
                         </button>
-                    </form>
+                        
+                        <form action="{{ route('loans.approve', $loan) }}" method="POST">
+                            @csrf @method('PATCH')
+                            <button
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg shadow-indigo-500/20">
+                                Authorize & Disburse
+                            </button>
+                        </form>
+                    @endif
+
+                    <a href="{{ route('loans.print', $loan->id) }}" target="_blank" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition hover:bg-slate-200">Print File</a>
 
                     <!-- Adjustment Modal -->
                     <div x-show="showAdjustment"

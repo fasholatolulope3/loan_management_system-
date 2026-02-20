@@ -11,11 +11,11 @@ return new class extends Migration {
             $table->engine = 'InnoDB';
             $table->id();
             $table->string('name');
-            $table->decimal('interest_rate', 5, 2); // e.g., 15.50
+            $table->decimal('interest_rate', 10, 2); // e.g., 10.00, 20.00, 30.00
             $table->decimal('min_amount', 15, 2);
             $table->decimal('max_amount', 15, 2);
             $table->integer('duration_months');
-            $table->decimal('penalty_rate', 5, 2)->default(0);
+            $table->decimal('penalty_rate', 10, 4)->default(0.0050); // Requirement #1: 0.005
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

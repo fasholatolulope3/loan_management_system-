@@ -19,15 +19,8 @@
     <nav class="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-lg border-b border-white/5">
         <div class="flex items-center justify-between py-4 px-6 max-w-7xl mx-auto">
             <a href="/" class="flex items-center group">
-                <div
-                    class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 group-hover:border-indigo-500/50 transition-colors shadow-lg">
-                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-2">
-                        <path d="M50 20 L80 80 L20 80 Z" fill="none" stroke="#ffffff" stroke-width="8"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                        <path d="M75 25 L85 15 M80 25 L80 10 M85 30 L95 20" stroke="#e63946" stroke-width="6"
-                            stroke-linecap="round" />
-                    </svg>
-                </div>
+                <img src="{{ asset('assets/images/logo.jpeg') }}" alt="{{ config('app.name', 'PDEI') }}"
+                    class="h-12 w-auto transition-transform group-hover:scale-105">
             </a>
 
             <div class="flex items-center gap-6">
@@ -38,11 +31,7 @@
                                 class="text-sm font-bold bg-white text-zinc-950 px-6 py-2 rounded-full hover:bg-zinc-200 transition">Dashboard</a>
                         @else
                             <a href="{{ route('login') }}"
-                                class="text-sm font-bold text-zinc-400 hover:text-white transition">Log in</a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}"
-                                    class="bg-white text-zinc-950 px-6 py-2 rounded-full text-sm font-bold hover:bg-zinc-200 transition">Register</a>
-                            @endif
+                                class="bg-white text-zinc-950 px-6 py-2 rounded-full text-sm font-bold hover:bg-zinc-200 transition shadow-lg transition-transform hover:scale-105 active:scale-95">Login</a>
                         @endauth
                     </div>
                 @endif

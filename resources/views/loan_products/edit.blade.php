@@ -50,42 +50,32 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
-                        <!-- REQUIREMENT #2: Strict Name Mapping -->
+                        <!-- REQUIREMENT #2: Descriptive names allowed -->
                         <div class="md:col-span-2">
-                            <x-input-label for="name" value="Product Category" />
-                            <select name="name" id="name" required
-                                class="block mt-1 w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="Daily"
-                                    {{ old('name', $loanProduct->name) == 'Daily' ? 'selected' : '' }}>Daily Payment
-                                    (10%)</option>
-                                <option value="Weekly"
-                                    {{ old('name', $loanProduct->name) == 'Weekly' ? 'selected' : '' }}>Weekly Payment
-                                    (20%)</option>
-                                <option value="Monthly"
-                                    {{ old('name', $loanProduct->name) == 'Monthly' ? 'selected' : '' }}>Monthly Payment
-                                    (30%)</option>
-                            </select>
+                            <x-input-label for="name" value="Product Name/Tier" />
+                            <x-text-input id="name" name="name" class="block mt-1 w-full" type="text"
+                                :value="old('name', $loanProduct->name)" placeholder="e.g. Weekly - 4 Weeks" required />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
-                        <!-- REQUIREMENT #3: Specific Interest Rates -->
+                        <!-- REQUIREMENT #3: Specific Interest Rates (IMMUTABLE) -->
                         <div>
-                            <x-input-label for="interest_rate" value="Annual Interest Rate (%)" />
-                            <x-text-input id="interest_rate" name="interest_rate"
-                                class="block mt-1 w-full dark:bg-slate-950 font-black text-indigo-600 text-lg"
-                                type="number" step="0.01" :value="old('interest_rate', $loanProduct->interest_rate)" required />
-                            <p class="mt-1 text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Required:
-                                Daily=10, Weekly=20, Monthly=30</p>
+                            <x-input-label for="interest_rate_display" value="Annual Interest Rate (%)" />
+                            <x-text-input id="interest_rate_display"
+                                class="block mt-1 w-full bg-slate-100 dark:bg-slate-900 font-black text-slate-500 text-lg cursor-not-allowed"
+                                type="text" :value="$loanProduct->interest_rate . '%'" readonly />
+                            <p class="mt-1 text-[10px] text-red-500 uppercase font-bold tracking-tighter italic">Fixed
+                                Policy Rule: This value cannot be altered via UI.</p>
                         </div>
 
-                        <!-- REQUIREMENT #1: The 0.005 Penalty Rate -->
+                        <!-- REQUIREMENT #1: The 0.005 Penalty Rate (IMMUTABLE) -->
                         <div>
-                            <x-input-label for="penalty_rate" value="Late Fee Penalty (Rate)" />
-                            <x-text-input id="penalty_rate" name="penalty_rate"
-                                class="block mt-1 w-full dark:bg-slate-950 font-mono text-red-500 text-lg"
-                                type="number" step="0.0001" :value="old('penalty_rate', $loanProduct->penalty_rate)" required />
-                            <p class="mt-1 text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Current
-                                Corporate Policy: 0.005</p>
+                            <x-input-label for="penalty_rate_display" value="Late Fee Penalty (Rate)" />
+                            <x-text-input id="penalty_rate_display"
+                                class="block mt-1 w-full bg-slate-100 dark:bg-slate-900 font-mono text-slate-500 text-lg cursor-not-allowed"
+                                type="text" :value="$loanProduct->penalty_rate" readonly />
+                            <p class="mt-1 text-[10px] text-red-500 uppercase font-bold tracking-tighter italic">Fixed
+                                Policy Rule: 0.005 (Immutable)</p>
                         </div>
 
                         <!-- Liquidity Bounds -->
@@ -96,8 +86,8 @@
                                 <div>
                                     <x-input-label for="min_amount" value="Min Principal (₦)" />
                                     <x-text-input id="min_amount" name="min_amount"
-                                        class="block mt-1 w-full dark:bg-slate-950" type="number" :value="old('min_amount', $loanProduct->min_amount)"
-                                        required />
+                                        class="block mt-1 w-full dark:bg-slate-950" type="number"
+                                        :value="old('min_amount', $loanProduct->min_amount)" required />
                                 </div>
 
                                 <div>
@@ -123,11 +113,9 @@
                             <x-input-label for="status" value="Operational Status" />
                             <select name="status" id="status"
                                 class="block mt-1 w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 rounded-xl shadow-sm">
-                                <option value="active"
-                                    {{ old('status', $loanProduct->status) == 'active' ? 'selected' : '' }}>Available
+                                <option value="active" {{ old('status', $loanProduct->status) == 'active' ? 'selected' : '' }}>Available
                                     for Operations</option>
-                                <option value="inactive"
-                                    {{ old('status', $loanProduct->status) == 'inactive' ? 'selected' : '' }}>Registry
+                                <option value="inactive" {{ old('status', $loanProduct->status) == 'inactive' ? 'selected' : '' }}>Registry
                                     Only (Disabled)</option>
                             </select>
                         </div>
