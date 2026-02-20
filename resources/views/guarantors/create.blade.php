@@ -64,6 +64,10 @@
                             </select>
                         </div>
                         <div>
+                            <x-input-label value="Number of Dependents" />
+                            <x-text-input type="number" name="dependent_persons" class="w-full mt-1" min="0" required />
+                        </div>
+                        <div>
                             <x-input-label value="Phone Number(s)" />
                             <x-text-input name="phone" class="w-full mt-1" required />
                         </div>
@@ -135,6 +139,10 @@
                             <x-text-input type="number" name="net_monthly_income" class="w-full mt-1" />
                         </div>
                         <div>
+                            <x-input-label value="Job Sector (e.g. Civil Service, Private Industry)" />
+                            <x-text-input name="job_sector" class="w-full mt-1" />
+                        </div>
+                        <div class="md:col-span-2">
                             <x-input-label value="Employer Address" />
                             <x-text-input name="employer_address" class="w-full mt-1" />
                         </div>

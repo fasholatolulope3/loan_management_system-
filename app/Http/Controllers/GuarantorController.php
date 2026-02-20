@@ -55,6 +55,9 @@ class GuarantorController extends Controller
             'marital_status' => 'required|string',
             'date_of_birth' => 'required|date|before:-18 years',
             'dependent_persons' => 'required|integer|min:0',
+            'job_sector' => 'nullable|string',
+            'date_of_visit_business' => 'nullable|date',
+            'date_of_visit_residence' => 'nullable|date',
 
             // Conditional Validation based on Type (Section III vs IV)
             'monthly_sales' => 'required_if:type,Business Owner|numeric|nullable',
@@ -62,6 +65,7 @@ class GuarantorController extends Controller
             'operational_expenses' => 'required_if:type,Business Owner|numeric|nullable',
             'net_monthly_income' => 'required_if:type,Employee|numeric|nullable',
             'employer_name' => 'required_if:type,Employee|string|nullable',
+            'employer_address' => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($request, $validated) {

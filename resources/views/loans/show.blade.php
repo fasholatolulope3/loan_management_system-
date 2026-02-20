@@ -19,9 +19,8 @@
             </div>
 
             <!-- REQUIREMENT #8: Governance Actions -->
-            @if ($loan->status === 'pending' && auth()->user()->role !== 'client')
-                <div class="flex gap-2" x-data="{ showAdjustment: false }">
-                    
+            <div class="flex gap-2" x-data="{ showAdjustment: false }">
+                @if ($loan->status === 'pending' && auth()->user()->role !== 'client')
                     <!-- Staff Action: Edit for Adjustment -->
                     @if($loan->approval_status === 'adjustment_needed' && auth()->user()->role === 'officer')
                         <a href="{{ route('loans.edit', $loan) }}" 
@@ -45,9 +44,15 @@
                             </button>
                         </form>
                     @endif
+                @endif
 
-                    <a href="{{ route('loans.print', $loan->id) }}" target="_blank" class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition hover:bg-slate-200">Print File</a>
+                @if(auth()->user()->role !== 'client')
+                    <a href="{{ route('loans.print', $loan->id) }}" target="_blank" class="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg shadow-indigo-500/20">
+                        Print File
+                    </a>
+                @endif
 
+                @if ($loan->status === 'pending' && auth()->user()->role === 'admin')
                     <!-- Adjustment Modal -->
                     <div x-show="showAdjustment"
                         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
@@ -67,8 +72,8 @@
                             </form>
                         </div>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     </x-slot>
 

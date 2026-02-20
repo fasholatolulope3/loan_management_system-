@@ -17,28 +17,36 @@ class Guarantor extends Model
         'phone',
         'relationship',
         'address',
-        
+
         // Identity Additions (Requirement #7 / CF4 Page 1)
+        'sex',
         'marital_status',
         'date_of_birth',
+        'dependent_persons',
         'type', // e.g., 'Business Owner', 'Employee', 'With Collateral'
-        
+
         // Employment & Income Data (Requirement #7 / CF4 Section IV)
         'employer_name',
+        'employer_address',
         'job_sector',
         'position',
         'net_monthly_income',
-        
+
+        // Visit Dates
+        'date_of_visit_business',
+        'date_of_visit_residence',
+
         // Financial Analysis Table (Requirement #7 / CF4 Section III)
-        // This JSON field stores the 'Cash Flow' and 'Balance Sheet' recap of the guarantor
-        'business_financials' 
+        'business_financials'
     ];
 
     /**
      * Precision Casting for Financial Compliance
      */
     protected $casts = [
-        'date_of_birth'      => 'date',
+        'date_of_birth' => 'date',
+        'date_of_visit_business' => 'date',
+        'date_of_visit_residence' => 'date',
         'net_monthly_income' => 'decimal:2',
         'business_financials' => 'array', // Crucial: This handles the repeating table data as JSON
     ];

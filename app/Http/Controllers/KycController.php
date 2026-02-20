@@ -20,14 +20,14 @@ class KycController extends Controller
 
         $request->validate([
             'national_id' => 'required|string|unique:clients,national_id',
-            'bvn'         => 'required|digits:11|unique:clients,bvn',
-            'address'      => 'required|string',
-            'income'       => 'required|numeric',
+            'bvn' => 'required|digits:11|unique:clients,bvn',
+            'address' => 'required|string',
+            'income' => 'required|numeric',
             'date_of_birth' => 'required|date|before:-18 years',
-            'g_name'       => 'required|string',
-            'g_phone'      => 'required|string',
+            'g_name' => 'required|string',
+            'g_phone' => 'required|string',
             'g_relationship' => 'required|string',
-            'g_address'    => 'required|string',
+            'g_address' => 'required|string',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -52,6 +52,11 @@ class KycController extends Controller
                 'phone' => $request->g_phone,
                 'relationship' => $request->g_relationship,
                 'address' => $request->g_address,
+                'sex' => $request->g_sex ?? 'F', // Default or add to form
+                'marital_status' => $request->g_marital_status ?? 'Single',
+                'date_of_birth' => $request->g_dob ?? now()->subYears(20),
+                'type' => $request->g_type ?? 'Employee',
+                'net_monthly_income' => $request->g_income ?? 0,
             ]);
         });
 

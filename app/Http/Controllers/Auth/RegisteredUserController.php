@@ -30,23 +30,32 @@ class RegisteredUserController extends Controller
     // Inside the store() method
     public function store(Request $request): RedirectResponse
     {
-        // ... existing validation ...
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'phone' => ['required', 'string', 'max:20'],
+            'national_id' => ['required', 'string', 'max:20', 'unique:clients,national_id'],
+            'address' => ['required', 'string', 'max:500'],
+            'income' => ['required', 'numeric', 'min:0'],
+            'date_of_birth' => ['required', 'date', 'before:-18 years'],
+            'employment_status' => ['required', 'string'],
+        ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make('Password123'),
             'role' => 'client',
         ]);
 
-        // ADD THIS: Automatically create the empty client profile
+        // Create the full client profile using registration data
         $user->client()->create([
-            'national_id' => 'TEMP-' . time(), // Temporary ID
-            'address' => 'Update required',
-            'income' => 0,
-            'employment_status' => 'Pending',
-            'date_of_birth' => now()->subYears(18), // Default to 18 years ago
+            'national_id' => $request->national_id,
+            'address' => $request->address,
+            'income' => $request->income,
+            'employment_status' => $request->employment_status,
+            'date_of_birth' => $request->date_of_birth,
         ]);
 
         event(new Registered($user));

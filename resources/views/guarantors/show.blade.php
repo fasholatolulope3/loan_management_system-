@@ -77,9 +77,13 @@
                                 <span>DOB</span><span
                                     class="font-black">{{ $guarantor->date_of_birth ? $guarantor->date_of_birth->format('d/m/Y') : 'N/A' }}</span>
                             </div>
-                            <div class="flex justify-between text-xs">
+                            <div class="flex justify-between border-b border-white/10 pb-2 text-xs">
                                 <span>Status</span><span
                                     class="font-black italic uppercase">{{ $guarantor->marital_status ?? 'Unknown' }}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span>Dependents</span><span
+                                    class="font-black uppercase tracking-widest">{{ $guarantor->dependent_persons ?? 0 }} Persons</span>
                             </div>
                         </div>
                     </div>
