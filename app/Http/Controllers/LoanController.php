@@ -64,11 +64,21 @@ class LoanController extends Controller
             'loan_product_id' => 'required|exists:loan_products,id',
             'amount' => 'required|numeric|min:1000',
 
+            // Applicant Demographics (NEW)
+            'residence_since' => 'required|string',
+            'dependent_count' => 'required|integer|min:0',
+            'home_ownership' => 'required|string',
+            'next_rent_amount' => 'nullable|numeric|required_if:home_ownership,renting',
+            'next_rent_date' => 'nullable|date|required_if:home_ownership,renting',
+
             // Applicant Business Profile (Part I)
             'business_name' => 'required|string|max:255',
             'business_location' => 'required|string',
             'business_premise_type' => 'required|in:own,rent',
             'business_start_date' => 'required|date',
+            'point_of_sale_count' => 'required|integer|min:0',
+            'employee_count' => 'required|integer|min:0',
+            'has_co_owners' => 'nullable|boolean',
 
             // Applicant Financials (Part II)
             'monthly_sales' => 'required|numeric',
@@ -79,7 +89,13 @@ class LoanController extends Controller
             'fixed_assets' => 'required|numeric',
             'total_liabilities' => 'required|numeric',
 
-            // Guarantor Section (Part III)
+            // Evaluation Logs (Part III - JSON)
+            'daily_sales_logs' => 'required|array|size:3',
+            'inventory_details' => 'required|array|min:1',
+            'business_references' => 'required|array|min:1',
+            'risk_mitigation' => 'required|array|min:1',
+
+            // Guarantor Section (Part IV)
             'guarantor_id' => 'nullable|exists:guarantors,id',
             'g_name' => 'nullable|string|required_without:guarantor_id',
             'g_relationship' => 'nullable|string|required_without:guarantor_id',
@@ -126,10 +142,20 @@ class LoanController extends Controller
                 'status' => 'pending',
                 'approval_status' => 'pending_review',
 
+                // Applicant Demographics
+                'residence_since' => $request->residence_since,
+                'dependent_count' => $request->dependent_count,
+                'home_ownership' => $request->home_ownership,
+                'next_rent_amount' => $request->next_rent_amount ?? 0,
+                'next_rent_date' => $request->next_rent_date,
+
                 // Business Metadata
                 'business_name' => $request->business_name,
                 'business_location' => $request->business_location,
                 'business_start_date' => $request->business_start_date,
+                'point_of_sale_count' => $request->point_of_sale_count,
+                'employee_count' => $request->employee_count,
+                'has_co_owners' => $request->has_boolean('has_co_owners'),
 
                 // Financial Snapshots
                 'monthly_sales' => $request->monthly_sales,
@@ -142,6 +168,12 @@ class LoanController extends Controller
                 'current_assets' => $request->current_assets,
                 'fixed_assets' => $request->fixed_assets,
                 'total_liabilities' => $request->total_liabilities,
+
+                // JSON Assessment Tables (NEW)
+                'daily_sales_logs' => $request->daily_sales_logs,
+                'inventory_details' => $request->inventory_details,
+                'business_references' => $request->business_references,
+                'risk_mitigation' => $request->risk_mitigation,
 
                 // Guarantor Snapshot (Req #7 - Part III)
                 'guarantor_business_financials' => [

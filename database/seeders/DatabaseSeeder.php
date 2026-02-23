@@ -112,5 +112,16 @@ class DatabaseSeeder extends Seeder
             'duration_months' => 3,
             'status' => 'active'
         ]);
+
+        // EMPLOYEE LOANS
+        LoanProduct::create([
+            'name' => 'Employee Loan',
+            'interest_rate' => 5.00,
+            'penalty_rate' => 0.005,
+            'min_amount' => 50000,
+            'max_amount' => 5000000,
+            'duration_months' => 12,
+            'status' => 'active'
+        ]);
     }
 }

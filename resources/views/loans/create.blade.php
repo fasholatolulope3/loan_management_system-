@@ -8,6 +8,11 @@
     <div class="py-12" x-data="{
         step: 1,
         collaterals: [{ type: 'HG', description: '', market_value: '' }],
+        daily_sales: [0, 0, 0],
+        purchase_history: [{ item: '', cost: 0 }],
+        inventory: [{ item: '', value: 0 }],
+        risks: [{ factor: '', mitigation: '' }],
+        references: [{ name: '', phone: '' }],
         addCollateral() { this.collaterals.push({ type: 'HG', description: '', market_value: '' }) },
         removeCollateral(index) { this.collaterals.splice(index, 1) }
     }">
@@ -26,12 +31,12 @@
 
             <!-- Progress Stepper (Requirement #7 - Order) -->
             <div class="mb-8 flex items-center justify-between px-10">
-                <template x-for="i in [1, 2, 3, 4, 5]">
+                <template x-for="i in [1, 2, 3, 4, 5, 6]">
                     <div class="flex items-center flex-1 last:flex-none">
                         <div :class="step >= i ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'bg-gray-200 dark:bg-slate-700 text-gray-500'"
                             class="w-10 h-10 rounded-full flex items-center justify-center font-black transition-all duration-300 transform"
                             :class="step === i ? 'scale-125' : ''" x-text="i"></div>
-                        <div x-show="i < 5" class="flex-1 h-1 bg-gray-200 dark:bg-slate-700 mx-2">
+                        <div x-show="i < 6" class="flex-1 h-1 bg-gray-200 dark:bg-slate-700 mx-2">
                             <div class="h-full bg-indigo-600 transition-all duration-500"
                                 :style="'width: ' + (step > i ? '100%' : '0%')"></div>
                         </div>
@@ -82,11 +87,40 @@
                         </div>
 
                         <div class="md:col-span-2 pt-4 border-t dark:border-slate-700 mt-4">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 italic">
+                                Applicant Demographics</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><x-input-label value="Residence Since" /><x-text-input name="residence_since"
+                                        class="w-full mt-1" placeholder="e.g. 15 Years" required /></div>
+                                <div><x-input-label value="No. of Dependents" /><x-text-input name="dependent_count"
+                                        type="number" class="w-full mt-1" required /></div>
+                                <div>
+                                    <x-input-label value="Home Ownership" />
+                                    <select name="home_ownership" x-model="homeType"
+                                        class="w-full mt-1 rounded-xl border-gray-300 dark:bg-slate-900 dark:text-white">
+                                        <option value="owned">Personal Home</option>
+                                        <option value="renting">Renting</option>
+                                        <option value="family">Family Home</option>
+                                        <option value="mortgage">Mortgage</option>
+                                    </select>
+                                </div>
+                                <div x-show="homeType === 'renting'" x-transition>
+                                    <x-input-label value="Next Rent Amount (₦)" /><x-text-input name="next_rent_amount"
+                                        type="number" class="w-full mt-1" />
+                                </div>
+                                <div x-show="homeType === 'renting'" x-transition>
+                                    <x-input-label value="Next Rent Due Date" /><x-text-input name="next_rent_date"
+                                        type="date" class="w-full mt-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2 pt-4 border-t dark:border-slate-700 mt-4">
                             <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 italic">Business
                                 Profile</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><x-input-label value="Business Registered/Trade Name" /><x-text-input
-                                        name="business_name" class="w-full mt-1" required /></div>
+                                <div><x-input-label value="Business Trade Name" /><x-text-input name="business_name"
+                                        class="w-full mt-1" required /></div>
                                 <div><x-input-label value="Precise Business Location" /><x-text-input
                                         name="business_location" class="w-full mt-1" required /></div>
                                 <div>
@@ -114,42 +148,164 @@
                             Client Business Financials</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div
                             class="space-y-6 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
                             <h4 class="text-xs font-black text-emerald-600 uppercase italic mb-2">Cash Flow (Monthly
                                 Avg)</h4>
                             <div><x-input-label value="Gross Sales / Revenue" /><x-text-input name="monthly_sales"
                                     type="number" class="w-full" required /></div>
-                            <div><x-input-label value="Cost of Sales (Stock/Raw Materials)" /><x-text-input
-                                    name="cost_of_sales" type="number" class="w-full" required /></div>
-                            <div><x-input-label value="Monthly Operational Exp. (Rent/Staff/Power)" /><x-text-input
-                                    name="operational_expenses" type="number" class="w-full" required /></div>
-                            <div><x-input-label value="Client Family/Personal Expenses" /><x-text-input
-                                    name="family_expenses" type="number" class="w-full" required /></div>
+                            <div><x-input-label value="Cost of Sales" /><x-text-input name="cost_of_sales" type="number"
+                                    class="w-full" required /></div>
+                            <div><x-input-label value="Operational Exp." /><x-text-input name="operational_expenses"
+                                    type="number" class="w-full" required /></div>
+                            <div><x-input-label value="Client Family Exp." /><x-text-input name="family_expenses"
+                                    type="number" class="w-full" required /></div>
                         </div>
 
                         <div
                             class="space-y-6 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
-                            <h4 class="text-xs font-black text-emerald-600 uppercase italic mb-2">Balance Sheet (Current
-                                Position)</h4>
-                            <div><x-input-label value="Current Assets (Cash & Inventory)" /><x-text-input
-                                    name="current_assets" type="number" class="w-full" required /></div>
-                            <div><x-input-label value="Fixed Assets (Machinery/Equipment)" /><x-text-input
-                                    name="fixed_assets" type="number" class="w-full" required /></div>
-                            <div><x-input-label value="Total Liabilities (Existing Debts)" /><x-text-input
+                            <h4 class="text-xs font-black text-emerald-600 uppercase italic mb-2">Balance Sheet Position
+                            </h4>
+                            <div><x-input-label value="Current Assets (Cash/INV)" /><x-text-input name="current_assets"
+                                    type="number" class="w-full" required /></div>
+                            <div><x-input-label value="Fixed Assets (Machinery)" /><x-text-input name="fixed_assets"
+                                    type="number" class="w-full" required /></div>
+                            <div><x-input-label value="Total Liabilities (Debts)" /><x-text-input
                                     name="total_liabilities" type="number" class="w-full" required /></div>
+                        </div>
+
+                        <div
+                            class="space-y-6 bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800">
+                            <h4 class="text-xs font-black text-indigo-600 uppercase italic mb-2">Business Metadata</h4>
+                            <div><x-input-label value="Total Employees" /><x-text-input name="employee_count"
+                                    type="number" class="w-full" required /></div>
+                            <div><x-input-label value="Points of Sale (POS)" /><x-text-input name="point_of_sale_count"
+                                    type="number" class="w-full" required /></div>
+                            <div class="pt-4">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="has_co_owners" value="1"
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                                    <span
+                                        class="ml-2 text-sm text-slate-600 font-bold uppercase tracking-tighter">Business
+                                        has Co-Owners</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- STEP 3: GUARANTOR FINANCIALS -->
+                <!-- STEP 3: EVALUATION TABLES (JSON DATA) -->
                 <div x-show="step === 3" x-transition.opacity.duration.400ms class="p-8 md:p-12">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-2xl">
+                            <x-heroicon-o-list-bullet class="w-6 h-6 text-indigo-600" />
+                        </div>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Part III:
+                            Assessment Evaluation Logs</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Daily Sales Log -->
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/40 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                            <h4 class="text-xs font-black text-indigo-600 uppercase mb-4">3-Day Sales Log (₦)</h4>
+                            <div class="space-y-3">
+                                <template x-for="(sale, i) in daily_sales" :key="i">
+                                    <div class="flex gap-2 items-center">
+                                        <span class="text-[10px] font-black w-12 text-slate-400"
+                                            x-text="'Day ' + (i+1)"></span>
+                                        <input type="number" :name="'daily_sales_logs['+i+']'"
+                                            class="flex-1 rounded-xl border-gray-300 dark:bg-slate-800 text-sm"
+                                            required>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Inventory Breakdown -->
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/40 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xs font-black text-indigo-600 uppercase">Inventory Breakdown</h4>
+                                <button type="button" @click="inventory.push({item:'', value:0})"
+                                    class="text-[9px] font-black uppercase text-indigo-600 hover:underline">+
+                                    Add</button>
+                            </div>
+                            <div class="space-y-3 overflow-y-auto max-h-40 pr-2">
+                                <template x-for="(inv, i) in inventory" :key="i">
+                                    <div class="flex gap-2">
+                                        <input type="text" :name="'inventory_details['+i+'][item]'"
+                                            placeholder="Item Name"
+                                            class="flex-1 rounded-xl border-gray-300 dark:bg-slate-800 text-xs"
+                                            required>
+                                        <input type="number" :name="'inventory_details['+i+'][value]'"
+                                            placeholder="Value"
+                                            class="w-24 rounded-xl border-gray-300 dark:bg-slate-800 text-xs" required>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Business References -->
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/40 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xs font-black text-indigo-600 uppercase">Business References</h4>
+                                <button type="button" @click="references.push({name:'', phone:''})"
+                                    class="text-[9px] font-black uppercase text-indigo-600 hover:underline">+
+                                    Add</button>
+                            </div>
+                            <div class="space-y-3">
+                                <template x-for="(ref, i) in references" :key="i">
+                                    <div class="flex gap-2">
+                                        <input type="text" :name="'business_references['+i+'][name]'" placeholder="Name"
+                                            class="flex-1 rounded-xl border-gray-300 dark:bg-slate-800 text-xs"
+                                            required>
+                                        <input type="text" :name="'business_references['+i+'][phone]'"
+                                            placeholder="Phone"
+                                            class="flex-1 rounded-xl border-gray-300 dark:bg-slate-800 text-xs"
+                                            required>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Risk Mitigation -->
+                        <div
+                            class="bg-slate-50 dark:bg-slate-900/40 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xs font-black text-indigo-600 uppercase">Risk Analysis</h4>
+                                <button type="button" @click="risks.push({factor:'', mitigation:''})"
+                                    class="text-[9px] font-black uppercase text-indigo-600 hover:underline">+
+                                    Add</button>
+                            </div>
+                            <div class="space-y-3">
+                                <template x-for="(risk, i) in risks" :key="i">
+                                    <div
+                                        class="flex flex-col gap-1 border-b border-slate-200 pb-2 dark:border-slate-700">
+                                        <input type="text" :name="'risk_mitigation['+i+'][factor]'"
+                                            placeholder="Risk Factor"
+                                            class="w-full rounded-xl border-gray-300 dark:bg-slate-800 text-xs"
+                                            required>
+                                        <input type="text" :name="'risk_mitigation['+i+'][mitigation]'"
+                                            placeholder="Mitigation Plan"
+                                            class="w-full rounded-xl border-gray-300 dark:bg-slate-800 text-xs"
+                                            required>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: GUARANTOR FINANCIALS -->
+                <div x-show="step === 4" x-transition.opacity.duration.400ms class="p-8 md:p-12">
                     <div class="flex items-center gap-4 mb-6">
                         <div class="bg-amber-100 dark:bg-amber-900/30 p-3 rounded-2xl">
                             <x-heroicon-o-shield-check class="w-6 h-6 text-amber-600" />
                         </div>
-                        <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Part III:
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Part IV:
                             Guarantor Profile & Financials</h3>
                     </div>
 
@@ -175,9 +331,11 @@
                             <div x-show="addGuarantorMode" x-transition
                                 class="mt-6 pt-6 border-t dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div><x-input-label value="Guarantor Full Name" /><x-text-input name="g_name"
-                                        class="w-full" /></div>
+                                        class="w-full" />
+                                </div>
                                 <div><x-input-label value="Relationship" /><x-text-input name="g_relationship"
-                                        class="w-full" /></div>
+                                        class="w-full" />
+                                </div>
                             </div>
                         </div>
 
@@ -209,15 +367,15 @@
                     </div>
                 </div>
 
-                <!-- STEP 4: COLLATERAL -->
-                <div x-show="step === 4" x-transition.opacity.duration.400ms class="p-8 md:p-12">
+                <!-- STEP 5: COLLATERAL -->
+                <div x-show="step === 5" x-transition.opacity.duration.400ms class="p-8 md:p-12">
                     <div class="flex justify-between items-center mb-8">
                         <div class="flex items-center gap-4">
                             <div class="bg-gray-100 dark:bg-slate-700/50 p-3 rounded-2xl">
                                 <x-heroicon-o-briefcase class="w-6 h-6 text-slate-600 dark:text-slate-400" />
                             </div>
                             <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Part
-                                IV: Collateral Assessment</h3>
+                                V: Collateral Assessment</h3>
                         </div>
                         <button type="button" @click="addCollateral()"
                             class="text-[10px] font-black bg-slate-900 dark:bg-white dark:text-slate-900 text-white px-5 py-2.5 rounded-full uppercase shadow-lg hover:scale-105 transition-transform">+
@@ -260,8 +418,8 @@
                     </div>
                 </div>
 
-                <!-- STEP 5: FINAL PROPOSAL -->
-                <div x-show="step === 5" x-transition.opacity.duration.400ms class="p-8 md:p-12">
+                <!-- STEP 6: FINAL PROPOSAL -->
+                <div x-show="step === 6" x-transition.opacity.duration.400ms class="p-8 md:p-12">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="bg-indigo-600 p-3 rounded-2xl shadow-lg">
                             <x-heroicon-o-document-check class="w-6 h-6 text-white" />
@@ -294,11 +452,11 @@
                     </div>
 
                     <div class="flex gap-4">
-                        <button type="button" x-show="step < 5" @click="step++"
+                        <button type="button" x-show="step < 6" @click="step++"
                             class="bg-indigo-600 text-white px-10 py-3.5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all">
                             Next Assessment Step
                         </button>
-                        <button type="submit" x-show="step === 5"
+                        <button type="submit" x-show="step === 6"
                             class="bg-slate-950 dark:bg-white dark:text-slate-900 text-white px-12 py-3.5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_25px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 transition-all">
                             Authorize & Submit Proposal
                         </button>

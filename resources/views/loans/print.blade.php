@@ -62,6 +62,10 @@
                     Verification V.25</p>
             </div>
             <div class="text-right">
+                <div class="bg-indigo-600 text-white px-4 py-2 rounded mb-2">
+                    <p class="text-[10px] uppercase font-black tracking-widest">Principal Loan Amount</p>
+                    <p class="text-xl font-bold">₦{{ number_format($loan->amount, 2) }}</p>
+                </div>
                 <div class="bg-slate-900 text-white px-4 py-2 rounded mb-2">
                     <p class="text-[10px] uppercase font-black tracking-widest">Loan Ref #</p>
                     <p class="text-xl font-bold italic">{{ str_pad($loan->id, 6, '0', STR_PAD_LEFT) }}</p>
@@ -77,19 +81,36 @@
             <section class="space-y-4">
                 <h3 class="bg-slate-900 text-white px-3 py-1 text-xs font-black uppercase tracking-widest">I.
                     Information about Applicant</h3>
-                <div class="space-y-1 text-sm">
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Surname / First Name</span>
+                <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Surname / First Name</span>
                         <span class="font-bold">{{ $loan->client?->user?->name }}</span>
-                    </p>
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">National ID / NIN</span> <span
-                            class="font-mono">{{ $loan->client?->national_id }}</span></p>
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Date of Birth / Residence
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">National ID / NIN</span>
+                        <span class="font-mono">{{ $loan->client?->national_id }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Date of Birth / Residence
                             Since</span>
                         {{ optional($loan->client?->date_of_birth)->format('d/m/Y') ?? 'N/A' }} /
                         {{ $loan->residence_since ?? 'N/A' }}
-                    </p>
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Address</span> <span
-                            class="text-xs italic">{{ $loan->client?->address }}</span></p>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Dependents / Home Type</span>
+                        {{ $loan->dependent_count ?? 0 }} Persons / {{ strtoupper($loan->home_ownership ?? 'N/A') }}
+                    </div>
+                </div>
+                @if(strtolower($loan->home_ownership) === 'renting')
+                    <div class="mt-2 p-2 bg-slate-50 rounded border border-slate-100 text-[10px]">
+                        <span class="text-slate-500 uppercase font-black mr-2">RENTAL NOTICE:</span>
+                        <span class="font-bold">₦{{ number_format($loan->next_rent_amount, 2) }}</span> due on <span
+                            class="font-bold text-indigo-600">{{ optional($loan->next_rent_date)->format('d M, Y') ?? 'N/A' }}</span>
+                    </div>
+                @endif
+                <div class="mt-3">
+                    <span class="text-slate-500 uppercase text-[10px] font-bold block">Full Residential Address</span>
+                    <span class="text-xs italic">{{ $loan->client?->address }}</span>
                 </div>
             </section>
 
@@ -97,18 +118,30 @@
             <section class="space-y-4">
                 <h3 class="bg-slate-900 text-white px-3 py-1 text-xs font-black uppercase tracking-widest">II. Business
                     Details</h3>
-                <div class="space-y-1 text-sm">
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Business Activity</span> <span
-                            class="font-bold uppercase tracking-tight text-indigo-700">{{ $loan->business_name }}</span>
-                    </p>
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Location / Tenure</span>
-                        {{ $loan->business_location }} (Since:
-                        {{ optional($loan->business_start_date)->format('Y') }})
-                    </p>
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Premises Ownership</span>
-                        {{ strtoupper($loan->business_premise_type ?? 'N/A') }}</p>
-                    <p><span class="text-slate-500 uppercase text-[10px] font-bold block">Workforce</span>
-                        {{ $loan->employee_count ?? 0 }} Employees</p>
+                <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                    <div class="col-span-2">
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Business Activity</span>
+                        <span
+                            class="font-bold uppercase tracking-tight text-indigo-700 text-lg">{{ $loan->business_name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Location / Tenure</span>
+                        {{ $loan->business_location }} (Since: {{ optional($loan->business_start_date)->format('Y') }})
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Premises Ownership</span>
+                        {{ strtoupper($loan->business_premise_type ?? 'N/A') }}
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Workforce 규모</span>
+                        {{ $loan->employee_count ?? 0 }} Employees
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] font-bold block">Points of Sale /
+                            Ownership</span>
+                        {{ $loan->point_of_sale_count ?? 0 }} POS /
+                        {{ $loan->has_co_owners ? 'CO-OWNED' : 'SINGLE OWNER' }}
+                    </div>
                 </div>
             </section>
         </div>
@@ -278,7 +311,8 @@
                     @foreach ($loan->schedules as $index => $s)
                         <tr>
                             <td class="text-center font-bold text-slate-500">{{ $index + 1 }} of
-                                {{ $loan->schedules->count() }}</td>
+                                {{ $loan->schedules->count() }}
+                            </td>
                             <td class="font-bold">{{ $s->due_date->format('d M, Y') }}</td>
                             <td class="text-right font-medium text-slate-600 italic">
                                 ₦{{ number_format($s->principal_amount, 2) }}</td>
