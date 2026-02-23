@@ -120,3 +120,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 require __DIR__ . '/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| 4. Hosting Helpers (Shared Hosting / InfinityFree)
+|--------------------------------------------------------------------------
+*/
+Route::get('/deploy/migrate', function () {
+    if (request('key') !== env('APP_KEY')) {
+        abort(403);
+    }
+
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return "Migration successful: " . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return "Migration failed: " . $e->getMessage();
+    }
+});
