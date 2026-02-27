@@ -16,7 +16,7 @@ services:
       - key: LOG_CHANNEL
         value: stderr
       - key: APP_KEY
-        generateValue: true
+        value: base64:fBLagyKY+55HaS14lY/vBIi1wNFmb1gyAc8kl7kEuuY=
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_URL

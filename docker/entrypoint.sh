@@ -1,9 +1,12 @@
 #!/bin/sh
 
 # Environment Check
-echo "Checking application environment..."
-php artisan about
-php artisan migrate:status --ansi || echo "Could not check migration status."
+if [ -z "$APP_KEY" ]; then
+    echo "ERROR: APP_KEY is not set!"
+    # exit 1 # Don't exit yet, let's see if it continues
+else
+    echo "APP_KEY is set."
+fi
 if [ "$APP_DEBUG" = "false" ]; then
     echo "Caching configuration..."
     php artisan config:cache
