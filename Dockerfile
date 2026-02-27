@@ -8,6 +8,7 @@ RUN npm install && npm run build
 FROM php:8.4-fpm-alpine
 
 # Install system dependencies
+ENV DB_CONNECTION=pgsql
 RUN apk add --no-cache \
     nginx \
     libpng-dev \

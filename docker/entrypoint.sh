@@ -7,6 +7,11 @@ if [ -z "$APP_KEY" ]; then
 else
     echo "APP_KEY is set."
 fi
+
+# Diagnostic: Show database configuration
+echo "Current Database Configuration (Diagnostic):"
+php artisan config:show database --ansi || echo "Could not show database config."
+echo "Current DB_CONNECTION: $DB_CONNECTION"
 if [ "$APP_DEBUG" = "false" ]; then
     echo "Caching configuration..."
     php artisan config:cache
