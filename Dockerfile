@@ -39,6 +39,7 @@ COPY . /var/www
 COPY --from=node-builder /app/public/build /var/www/public/build
 
 # Install composer dependencies
+RUN php -v
 RUN composer install --no-dev --optimize-autoloader
 
 # Copy nginx, supervisor, and entrypoint configs
