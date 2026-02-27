@@ -1,6 +1,9 @@
 #!/bin/sh
 
-# Optimization (conditional)
+# Environment Check
+echo "Checking application environment..."
+php artisan about
+php artisan migrate:status --ansi || echo "Could not check migration status."
 if [ "$APP_DEBUG" = "false" ]; then
     echo "Caching configuration..."
     php artisan config:cache

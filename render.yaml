@@ -23,6 +23,10 @@ services:
         fromDatabase:
           name: lms-db
           property: database
+      - key: DB_SSLMODE
+        value: no-verify
+      - key: LOG_LEVEL
+        value: debug
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE
