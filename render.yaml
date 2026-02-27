@@ -10,7 +10,11 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: true
+        value: "true"
+      - key: APP_URL
+        value: https://loan-management-system-r3w9.onrender.com
+      - key: LOG_CHANNEL
+        value: stderr
       - key: APP_KEY
         generateValue: true
       - key: DB_CONNECTION
