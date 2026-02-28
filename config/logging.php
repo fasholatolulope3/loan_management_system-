@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'default' => (env('RENDER') || env('DATABASE_URL')) ? 'stderr' : env('LOG_CHANNEL', 'stack'),
+    'default' => (env('RENDER') || env('DATABASE_URL') || env('DB_URL')) ? 'stderr' : env('LOG_CHANNEL', 'stack'),
 
     /*
     |--------------------------------------------------------------------------

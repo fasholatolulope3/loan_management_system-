@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DATABASE_URL') ? 'pgsql' : env('DB_CONNECTION', 'sqlite'),
+    'default' => (env('DATABASE_URL') || env('DB_URL') || env('RENDER')) ? 'pgsql' : env('DB_CONNECTION', 'sqlite'),
 
     /*
     |--------------------------------------------------------------------------
