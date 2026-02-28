@@ -9,6 +9,8 @@ FROM php:8.4-fpm-alpine
 
 # Install system dependencies
 ENV DB_CONNECTION=pgsql
+ENV LOG_CHANNEL=stderr
+
 RUN apk add --no-cache \
     nginx \
     libpng-dev \
@@ -36,6 +38,9 @@ WORKDIR /var/www
 # Copy existing application directory contents
 COPY . /var/www
 
+# Remove potential local .env if it somehow made it into the context
+RUN rm -f /var/www/.env
+
 # Copy built assets from node-builder
 COPY --from=node-builder /app/public/build /var/www/public/build
 
@@ -51,6 +56,7 @@ COPY ./docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 # Set permissions
 RUN chmod +x /usr/local/bin/entrypoint.sh
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Expose port 80
 EXPOSE 80
