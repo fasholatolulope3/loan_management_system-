@@ -73,7 +73,7 @@ return [
     |
     */
 
-    'connection' => env('SESSION_CONNECTION', (env('RENDER') || env('DB_URL')) ? 'pgsql' : null),
+    'connection' => (env('RENDER') || env('DATABASE_URL') || env('DB_URL')) ? 'pgsql' : env('SESSION_CONNECTION'),
 
     /*
     |--------------------------------------------------------------------------
