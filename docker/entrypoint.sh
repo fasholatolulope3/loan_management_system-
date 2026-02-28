@@ -22,6 +22,11 @@ if [ -z "$DB_CONNECTION" ]; then
     export DB_CONNECTION=pgsql
 fi
 
+# Force APP_ENV to production if not set
+if [ -z "$APP_ENV" ]; then
+    export APP_ENV=production
+fi
+
 # Diagnostic: Show database configuration
 echo "Current Database Configuration (Diagnostic):"
 php artisan config:show database --ansi || echo "Could not show database config."

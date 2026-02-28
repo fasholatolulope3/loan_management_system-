@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', env('APP_ENV') === 'production' ? 'stderr' : 'stack'),
+    'default' => env('LOG_CHANNEL', env('RENDER') ? 'stderr' : 'stack'),
 
     /*
     |--------------------------------------------------------------------------
