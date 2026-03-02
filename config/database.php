@@ -85,12 +85,12 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DATABASE_URL') ?: env('DB_URL'),
-            'host' => env('DB_HOST'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE'),
-            'username' => env('DB_USERNAME'),
-            'password' => env('DB_PASSWORD'),
+            'url' => ($url = env('DATABASE_URL') ?: env('DB_URL')),
+            'host' => $url ? null : env('DB_HOST', '127.0.0.1'),
+            'port' => $url ? null : env('DB_PORT', '5432'),
+            'database' => $url ? null : env('DB_DATABASE', 'laravel'),
+            'username' => $url ? null : env('DB_USERNAME', 'root'),
+            'password' => $url ? null : env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
