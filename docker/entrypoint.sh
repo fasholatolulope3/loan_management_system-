@@ -28,9 +28,19 @@ if [ -z "$APP_ENV" ]; then
 fi
 
 # Diagnostic: Show database configuration
-echo "Current Database Configuration (Diagnostic):"
+echo "--- Environment Diagnostics ---"
+echo "DB_CONNECTION: $DB_CONNECTION"
+echo "DB_HOST: $DB_HOST"
+echo "DB_PORT: $DB_PORT"
+echo "DB_DATABASE: $DB_DATABASE"
+echo "DB_USERNAME: $DB_USERNAME"
+echo "HAS_DB_PASSWORD: $(if [ -n "$DB_PASSWORD" ]; then echo "YES"; else echo "NO"; fi)"
+echo "HAS_DATABASE_URL: $(if [ -n "$DATABASE_URL" ]; then echo "YES"; else echo "NO"; fi)"
+echo "HAS_DB_URL: $(if [ -n "$DB_URL" ]; then echo "YES"; else echo "NO"; fi)"
+echo "------------------------------"
+
+echo "Current Database Configuration (Laravel's perspective):"
 php artisan config:show database --ansi || echo "Could not show database config."
-echo "Current DB_CONNECTION: $DB_CONNECTION"
 
 if [ "$APP_DEBUG" = "false" ]; then
     echo "Caching configuration..."
