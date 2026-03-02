@@ -30,48 +30,29 @@ fi
 # Generate .env file from environment variables at runtime
 echo "Generating .env file..."
 rm -f /var/www/.env
-touch /var/www/.env
-# Capture common Laravel environment variables
-for var in $(env | grep -E '^(APP_|DB_|LOG_|SESSION_|CACHE_|MAIL_|REDIS_|QUEUE_|FILESYSTEM_|AWS_|VITE_|RENDER)'); do
-    echo "$var" >> /var/www/.env
-done
-# Ensure APP_KEY is written if it exists (might not be caught by grep if formatted differently)
+# Capture common Laravel environment variables directly to file
+env | grep -E '^(APP_|DB_|LOG_|SESSION_|CACHE_|MAIL_|REDIS_|QUEUE_|FILESYSTEM_|AWS_|VITE_|RENDER)' > /var/www/.env
+# Ensure APP_KEY is written if it exists
 if [ -n "$APP_KEY" ]; then
     echo "APP_KEY=$APP_KEY" >> /var/www/.env
 fi
 echo ".env file generated."
 
-# Diagnostic: Show database configuration
-echo "--- Environment Diagnostics ---"
-echo "DB_CONNECTION: $DB_CONNECTION"
-echo "DB_HOST: $DB_HOST"
-echo "DB_PORT: $DB_PORT"
-echo "DB_DATABASE: $DB_DATABASE"
-echo "DB_USERNAME: $DB_USERNAME"
-echo "HAS_DB_PASSWORD: $(if [ -n "$DB_PASSWORD" ]; then echo "YES"; else echo "NO"; fi)"
-echo "HAS_DATABASE_URL: $(if [ -n "$DATABASE_URL" ]; then echo "YES"; else echo "NO"; fi)"
-echo "HAS_DB_URL: $(if [ -n "$DB_URL" ]; then echo "YES"; else echo "NO"; fi)"
-echo "------------------------------"
-
-echo "Current Database Configuration (Laravel's perspective):"
-php artisan config:show database --ansi || echo "Could not show database config."
-
-if [ "$APP_DEBUG" = "false" ]; then
-    echo "Caching configuration..."
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
-else
-    echo "Debug mode detected, skipping cache..."
-    php artisan config:clear
-    php artisan route:clear
-    php artisan view:clear
-fi
-
-# Run migrations (force)
-# Only run if DB is reachable
+# Wait for database and run migrations
 echo "Waiting for database and running migrations..."
-php artisan migrate --force --ansi || echo "Migrations failed, but continuing..."
+# We try to run migrations, which will also act as a connectivity check
+MAX_RETRIES=5
+COUNT=0
+while [ $COUNT -lt $MAX_RETRIES ]; do
+    php artisan migrate --force --seed --ansi && break
+    COUNT=$((COUNT + 1))
+    echo "Migration attempt $COUNT failed. Retrying in 5 seconds..."
+    sleep 5
+done
+
+if [ $COUNT -eq $MAX_RETRIES ]; then
+    echo "ERROR: Migrations failed after $MAX_RETRIES attempts."
+fi
 
 # Start Supervisord
 echo "Starting Supervisord..."
