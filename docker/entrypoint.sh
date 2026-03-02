@@ -27,6 +27,20 @@ if [ -z "$APP_ENV" ]; then
     export APP_ENV=production
 fi
 
+# Generate .env file from environment variables at runtime
+echo "Generating .env file..."
+rm -f /var/www/.env
+touch /var/www/.env
+# Capture common Laravel environment variables
+for var in $(env | grep -E '^(APP_|DB_|LOG_|SESSION_|CACHE_|MAIL_|REDIS_|QUEUE_|FILESYSTEM_|AWS_|VITE_|RENDER)'); do
+    echo "$var" >> /var/www/.env
+done
+# Ensure APP_KEY is written if it exists (might not be caught by grep if formatted differently)
+if [ -n "$APP_KEY" ]; then
+    echo "APP_KEY=$APP_KEY" >> /var/www/.env
+fi
+echo ".env file generated."
+
 # Diagnostic: Show database configuration
 echo "--- Environment Diagnostics ---"
 echo "DB_CONNECTION: $DB_CONNECTION"
