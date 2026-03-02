@@ -11,3 +11,4 @@ storage/framework/testing/*
 storage/framework/views/*
 docker-compose.yml
 .dockerignore
+bootstrap/cache/*
