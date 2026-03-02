@@ -86,10 +86,10 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL') ?: env('DB_URL'),
-            'host' => env('DB_HOST'),
+            'host' => env('DB_HOST', 'lms-db'),
             'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE'),
-            'username' => env('DB_USERNAME'),
+            'database' => env('DB_DATABASE', 'lms_db'),
+            'username' => env('DB_USERNAME', 'lms_user'),
             'password' => env('DB_PASSWORD'),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
