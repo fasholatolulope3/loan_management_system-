@@ -17,7 +17,7 @@ class LoanProduct extends Model
         'penalty_rate',     // 0.005 (Requirement #1)
         'min_amount',
         'max_amount',
-        'duration_months',  // The number of installments (Daily/Weekly/Monthly)
+        'installment_count',  // The number of installments (Daily/Weekly/Monthly)
         'status'            // active, inactive
     ];
 

@@ -47,7 +47,7 @@ class LoanProductController extends Controller
 
             'min_amount' => 'required|numeric|min:1',
             'max_amount' => 'required|numeric|gt:min_amount',
-            'duration_months' => 'required|integer|min:1',
+            'installment_count' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -58,7 +58,7 @@ class LoanProductController extends Controller
         AuditLog::create([
             'user_id' => Auth::id(),
             'action' => 'loan_product_creation',
-            'description' => "Established {$product->name} category. Rules: Rate={$product->interest_rate}%, Penalty={$product->penalty_rate}",
+            'description' => "Established {$product->name} category. Rules: Rate={$product->interest_rate}%, Penalty={$product->penalty_rate}, Installments={$product->installment_count}",
             'ip_address' => $request->ip()
         ]);
 
@@ -76,28 +76,38 @@ class LoanProductController extends Controller
      */
     public function update(Request $request, LoanProduct $loanProduct): RedirectResponse
     {
-        $validated = $request->validate([
+        $isAdmin = Auth::user()->role === 'admin';
+
+        $rules = [
             'name' => 'required|string|unique:loan_products,name,' . $loanProduct->id,
-            // interest_rate and penalty_rate are IMMUTABLE per user request
             'min_amount' => 'required|numeric|min:1',
             'max_amount' => 'required|numeric|gt:min_amount',
-            'duration_months' => 'required|integer|min:1',
+            'installment_count' => 'required|integer|min:1',
             'status' => 'required|in:active,inactive',
-        ]);
+        ];
 
-        // Only update fields that are allowed to change
-        $loanProduct->update($request->only([
-            'name',
-            'min_amount',
-            'max_amount',
-            'duration_months',
-            'status'
-        ]));
+        if ($isAdmin) {
+            $rules['interest_rate'] = 'required|numeric|min:0';
+            $rules['penalty_rate'] = 'required|numeric|min:0';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Fields allowed for everyone
+        $fields = ['name', 'min_amount', 'max_amount', 'installment_count', 'status'];
+
+        // Add sensitive fields only if Admin
+        if ($isAdmin) {
+            $fields[] = 'interest_rate';
+            $fields[] = 'penalty_rate';
+        }
+
+        $loanProduct->update($request->only($fields));
 
         AuditLog::create([
             'user_id' => Auth::id(),
             'action' => 'loan_product_updated',
-            'description' => "Re-configured product terms for: {$loanProduct->name}",
+            'description' => "Re-configured product terms for: {$loanProduct->name}" . ($isAdmin ? " (Financial rules modified)" : ""),
             'ip_address' => $request->ip()
         ]);
 

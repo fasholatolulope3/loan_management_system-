@@ -58,24 +58,40 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
-                        <!-- REQUIREMENT #3: Specific Interest Rates (IMMUTABLE) -->
+                        <!-- REQUIREMENT #3: Specific Interest Rates (EDITABLE FOR ADMIN) -->
                         <div>
-                            <x-input-label for="interest_rate_display" value="Annual Interest Rate (%)" />
-                            <x-text-input id="interest_rate_display"
-                                class="block mt-1 w-full bg-slate-100 dark:bg-slate-900 font-black text-slate-500 text-lg cursor-not-allowed"
-                                type="text" :value="$loanProduct->interest_rate . '%'" readonly />
-                            <p class="mt-1 text-[10px] text-red-500 uppercase font-bold tracking-tighter italic">Fixed
-                                Policy Rule: This value cannot be altered via UI.</p>
+                            <x-input-label for="interest_rate" value="Annual Interest Rate (%)" />
+                            @if(auth()->user()->role === 'admin')
+                                <x-text-input id="interest_rate" name="interest_rate"
+                                    class="block mt-1 w-full font-black text-lg" type="number" step="0.01"
+                                    :value="old('interest_rate', $loanProduct->interest_rate)" required />
+                                <p class="mt-1 text-[10px] text-indigo-500 uppercase font-bold tracking-tighter italic">
+                                    Administrative Override: You are modifying a core financial policy.</p>
+                            @else
+                                <x-text-input id="interest_rate_display"
+                                    class="block mt-1 w-full bg-slate-100 dark:bg-slate-900 font-black text-slate-500 text-lg cursor-not-allowed"
+                                    type="text" :value="$loanProduct->interest_rate . '%'" readonly />
+                                <p class="mt-1 text-[10px] text-red-500 uppercase font-bold tracking-tighter italic">Fixed
+                                    Policy Rule: This value cannot be altered via UI.</p>
+                            @endif
                         </div>
 
-                        <!-- REQUIREMENT #1: The 0.005 Penalty Rate (IMMUTABLE) -->
+                        <!-- REQUIREMENT #1: The 0.005 Penalty Rate (EDITABLE FOR ADMIN) -->
                         <div>
-                            <x-input-label for="penalty_rate_display" value="Late Fee Penalty (Rate)" />
-                            <x-text-input id="penalty_rate_display"
-                                class="block mt-1 w-full bg-slate-100 dark:bg-slate-900 font-mono text-slate-500 text-lg cursor-not-allowed"
-                                type="text" :value="$loanProduct->penalty_rate" readonly />
-                            <p class="mt-1 text-[10px] text-red-500 uppercase font-bold tracking-tighter italic">Fixed
-                                Policy Rule: 0.005 (Immutable)</p>
+                            <x-input-label for="penalty_rate" value="Late Fee Penalty (Rate)" />
+                            @if(auth()->user()->role === 'admin')
+                                <x-text-input id="penalty_rate" name="penalty_rate"
+                                    class="block mt-1 w-full font-mono text-lg" type="number" step="0.0001"
+                                    :value="old('penalty_rate', $loanProduct->penalty_rate)" required />
+                                <p class="mt-1 text-[10px] text-indigo-500 uppercase font-bold tracking-tighter italic">
+                                    Administrative Override: Adjusting the default penalty coefficient.</p>
+                            @else
+                                <x-text-input id="penalty_rate_display"
+                                    class="block mt-1 w-full bg-slate-100 dark:bg-slate-900 font-mono text-slate-500 text-lg cursor-not-allowed"
+                                    type="text" :value="$loanProduct->penalty_rate" readonly />
+                                <p class="mt-1 text-[10px] text-red-500 uppercase font-bold tracking-tighter italic">Fixed
+                                    Policy Rule: {{ $loanProduct->penalty_rate }} (Immutable)</p>
+                            @endif
                         </div>
 
                         <!-- Liquidity Bounds -->
@@ -101,9 +117,10 @@
 
                         <!-- Duration Logic -->
                         <div>
-                            <x-input-label for="duration_months" value="Total Installments" />
-                            <x-text-input id="duration_months" name="duration_months"
-                                class="block mt-1 w-full dark:bg-slate-950" type="number" :value="old('duration_months', $loanProduct->duration_months)" required />
+                            <x-input-label for="installment_count" value="Total Installments" />
+                            <x-text-input id="installment_count" name="installment_count"
+                                class="block mt-1 w-full dark:bg-slate-950" type="number"
+                                :value="old('installment_count', $loanProduct->installment_count)" required />
                             <p class="mt-1 text-[10px] text-slate-500 italic leading-tight">Represents the total count
                                 of payments across the tenure.</p>
                         </div>

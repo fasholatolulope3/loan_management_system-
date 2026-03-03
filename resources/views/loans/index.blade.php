@@ -34,10 +34,20 @@
             <!-- Requirement #9: Reporting & Arrears Filtering -->
             <div
                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700">
-                <form method="GET" action="{{ route('loans.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form method="GET" action="{{ route('loans.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div class="md:col-span-2">
                         <x-text-input type="text" name="search"
                             placeholder="Search by Loan ID, Client Name, or Business..." value="{{ request('search') }}"
+                            class="w-full dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl" />
+                    </div>
+                    <div>
+                        <x-text-input type="date" name="start_date" placeholder="Start Date"
+                            value="{{ request('start_date') }}"
+                            class="w-full dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl" />
+                    </div>
+                    <div>
+                        <x-text-input type="date" name="end_date" placeholder="End Date"
+                            value="{{ request('end_date') }}"
                             class="w-full dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl" />
                     </div>
                     <div>
@@ -52,10 +62,12 @@
                             </option>
                         </select>
                     </div>
-                    <button type="submit"
-                        class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 dark:hover:bg-indigo-400 dark:hover:text-white transition shadow-md">
-                        Update View
-                    </button>
+                    <div class="md:col-span-5 flex justify-end">
+                        <button type="submit"
+                            class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 dark:hover:bg-indigo-400 dark:hover:text-white transition shadow-md">
+                            Apply Filters
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -88,15 +100,15 @@
                         </thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
                             @forelse($loans as $loan)
-                                <tr
-                                    class="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition duration-200 group">
+                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition duration-200 group">
 
                                     <!-- ID & Date -->
                                     <td class="px-8 py-6 whitespace-nowrap">
                                         <p class="text-sm font-black text-slate-900 dark:text-white">
                                             #{{ str_pad($loan->id, 5, '0', STR_PAD_LEFT) }}</p>
                                         <p class="text-[10px] text-slate-400 font-bold uppercase">
-                                            {{ $loan->created_at->format('d M, Y') }}</p>
+                                            {{ $loan->created_at->format('d M, Y') }}
+                                        </p>
                                     </td>
 
                                     <!-- Client Details -->
@@ -107,8 +119,7 @@
                                                 {{ substr($loan->client?->user?->name ?? '?', 0, 1) }}
                                             </div>
                                             <div class="ml-4">
-                                                <p
-                                                    class="text-sm font-bold text-slate-900 dark:text-white leading-none">
+                                                <p class="text-sm font-bold text-slate-900 dark:text-white leading-none">
                                                     {{ $loan->client?->user?->name ?? 'N/A' }}
                                                 </p>
                                                 <p class="text-[10px] text-indigo-500 font-black uppercase mt-1">
@@ -139,14 +150,13 @@
 
                                     <!-- Refined Badges: Requirement #8 (Adjustment logic) -->
                                     <td class="px-6 py-6 whitespace-nowrap">
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border
-                                            {{ $loan->approval_status === 'adjustment_needed' ? 'bg-orange-50 text-orange-600 border-orange-200 animate-pulse' : '' }}
-                                            {{ $loan->status === 'active' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : '' }}
-                                            {{ $loan->status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : '' }}
-                                            {{ $loan->status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : '' }}
-                                            {{ $loan->status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' : '' }}
-                                        ">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border
+                                                {{ $loan->approval_status === 'adjustment_needed' ? 'bg-orange-50 text-orange-600 border-orange-200 animate-pulse' : '' }}
+                                                {{ $loan->status === 'active' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : '' }}
+                                                {{ $loan->status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : '' }}
+                                                {{ $loan->status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : '' }}
+                                                {{ $loan->status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' : '' }}
+                                            ">
                                             @if ($loan->approval_status === 'adjustment_needed')
                                                 <x-heroicon-s-exclamation-circle class="w-3 h-3 mr-1" />
                                                 Needs Adjustment

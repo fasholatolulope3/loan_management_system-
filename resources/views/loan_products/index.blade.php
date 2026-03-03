@@ -16,11 +16,11 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-{{-- 
+            {{--
             @if (session('success'))
-                <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
-                    {{ session('success') }}
-                </div>
+            <div class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+                {{ session('success') }}
+            </div>
             @endif --}}
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -42,8 +42,8 @@
                                         <span class="font-bold">{{ $product->interest_rate }}%</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-500">Duration:</span>
-                                        <span class="font-bold">{{ $product->duration_months }} Mo.</span>
+                                        <span class="text-gray-500">Payments:</span>
+                                        <span class="font-bold">{{ $product->installment_count }} Installments</span>
                                     </div>
                                 </div>
 

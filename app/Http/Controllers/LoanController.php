@@ -27,11 +27,28 @@ class LoanController extends Controller
             $query->where('collation_center_id', $user->collation_center_id);
         }
 
-        // Requirement #9: Repayment/Arrears search logic
-        if ($request->search) {
-            $query->whereHas('client.user', fn($q) => $q->where('name', 'like', "%{$request->search}%"))
-                ->orWhere('id', 'like', "%{$request->search}%")
-                ->orWhere('business_name', 'like', "%{$request->search}%");
+        // Requirement #9: Repayment/Arrears search logic (properly grouped)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('client.user', fn($q2) => $q2->where('name', 'like', "%{$search}%"))
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhere('business_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Date Range Filter
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('created_at', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
+        } elseif ($request->filled('start_date')) {
+            $query->where('created_at', '>=', $request->start_date . ' 00:00:00');
+        } elseif ($request->filled('end_date')) {
+            $query->where('created_at', '<=', $request->end_date . ' 23:59:59');
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         $loans = $query->latest()->paginate(15);
@@ -119,7 +136,9 @@ class LoanController extends Controller
                     'name' => $request->g_name,
                     'phone' => '0000000000', // To be updated by staff later
                     'address' => 'Pending Confirmation',
-                    'occupation' => $request->g_income_source ?? 'Unknown',
+                    'job_sector' => $request->g_income_source ?? 'Unknown',
+                    'net_monthly_income' => $request->g_monthly_income ?? 0,
+                    'relationship' => $request->g_relationship,
                 ]);
                 $guarantorId = $newGuarantor->id;
             }
@@ -138,7 +157,7 @@ class LoanController extends Controller
                 'loan_product_id' => $product->id,
                 'amount' => $request->amount,
                 'interest_rate' => $product->interest_rate,
-                'duration_months' => $product->duration_months,
+                'installment_count' => $product->installment_count,
                 'status' => 'pending',
                 'approval_status' => 'pending_review',
 
@@ -155,7 +174,7 @@ class LoanController extends Controller
                 'business_start_date' => $request->business_start_date,
                 'point_of_sale_count' => $request->point_of_sale_count,
                 'employee_count' => $request->employee_count,
-                'has_co_owners' => $request->has_boolean('has_co_owners'),
+                'has_co_owners' => $request->boolean('has_co_owners'),
 
                 // Financial Snapshots
                 'monthly_sales' => $request->monthly_sales,
@@ -308,8 +327,8 @@ class LoanController extends Controller
             // 2. Amortization Computation (Req #1, #2, #3)
             $interestTotal = $loan->amount * ($loan->interest_rate / 100);
             $totalPayable = $loan->amount + $interestTotal;
-            $duration = $loan->duration_months;
-            $installmentAmount = $totalPayable / $duration;
+            $installment_count = $loan->installment_count;
+            $installmentAmount = $totalPayable / $installment_count;
 
             $productName = strtolower($loan->product->name);
             $intervalType = 'monthly'; // default
@@ -322,7 +341,8 @@ class LoanController extends Controller
                 $intervalType = 'monthly';
 
             $currentDate = now();
-            for ($i = 1; $i <= $duration; $i++) {
+            $currentDate = now();
+            for ($i = 1; $i <= $installment_count; $i++) {
                 if ($intervalType === 'daily') {
                     // Logic for Daily "Working Days" (Skip Sat/Sun)
                     $currentDate->addDay();
@@ -341,8 +361,8 @@ class LoanController extends Controller
                 LoanSchedule::create([
                     'loan_id' => $loan->id,
                     'due_date' => $dueDate,
-                    'principal_amount' => $loan->amount / $duration,
-                    'interest_amount' => $interestTotal / $duration,
+                    'principal_amount' => $loan->amount / $installment_count,
+                    'interest_amount' => $interestTotal / $installment_count,
                     'total_due' => $installmentAmount,
                     'status' => 'pending'
                 ]);
@@ -406,6 +426,46 @@ class LoanController extends Controller
     }
 
     /**
+     * Daily Collections Filter
+     */
+    public function collections(Request $request): View
+    {
+        $user = Auth::user();
+
+        // Default to a 7-day range ending today if no dates are provided
+        $startDate = $request->input('start_date', now()->subDays(7)->format('Y-m-d'));
+        $endDate = $request->input('end_date', now()->format('Y-m-d'));
+
+        $query = LoanSchedule::whereBetween('due_date', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->with(['loan.client.user', 'loan.collationCenter']);
+
+        // 1. ROLE-BASED SCOPING
+        if ($user->role === 'officer' && $user->collation_center_id) {
+            $query->whereHas('loan', function ($q) use ($user) {
+                $q->where('collation_center_id', $user->collation_center_id);
+            });
+        }
+
+        // 2. SEARCH
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('loan.client.user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Optional filter by status (paid vs pending)
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $schedules = $query->orderBy('due_date', 'asc')->paginate(30);
+
+        return view('reports.collections', compact('schedules', 'startDate', 'endDate'));
+    }
+
+    /**
      * Detailed View showing Balance Sheet & Assessment Ratios
      */
     public function show(Loan $loan): View
@@ -414,7 +474,7 @@ class LoanController extends Controller
 
         // Financial Underwriting Ratios
         $ratios = [
-            'drs' => ($loan->amount / $loan->duration_months) / max($loan->payment_capacity, 1),
+            'drs' => ($loan->amount / $loan->installment_count) / max($loan->payment_capacity, 1),
             'margin' => ($loan->gross_profit / max($loan->monthly_sales, 1)) * 100
         ];
 

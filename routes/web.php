@@ -67,6 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
          * REPORTING & COMPLIANCE (Requirement #9)
          */
         Route::prefix('reports')->name('reports.')->group(function () {
+            // Daily Collections Filter
+            Route::get('/collections', [LoanController::class, 'collections'])->name('collections');
             // Search for Arrears & Print
             Route::get('/arrears', [LoanController::class, 'arrears'])->name('arrears');
             // Global Statistics
@@ -83,6 +85,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // NEW: Authority verification of payment receipts
             Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify'])->name('payments.verify');
+
+            // QUICK ACTION: Directly mark a schedule as paid (cash/verified)
+            Route::post('/schedules/{schedule}/pay', [PaymentController::class, 'markPaid'])->name('schedules.pay');
         });
 
         /**

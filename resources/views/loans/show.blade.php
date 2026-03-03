@@ -100,7 +100,7 @@
                     <p class="text-[10px] text-indigo-300 uppercase font-black tracking-widest">DRS (Monthly/Surplus)
                     </p>
                     <p class="text-2xl font-black">
-                        {{ number_format(($loan->amount / $loan->duration_months / max($loan->payment_capacity, 1)) * 100, 1) }}%
+                        {{ number_format(($loan->amount / $loan->installment_count / max($loan->payment_capacity, 1)) * 100, 1) }}%
                     </p>
                 </div>
             </div>
@@ -173,7 +173,7 @@
                                         class="text-lg font-black dark:text-white leading-tight uppercase underline decoration-indigo-200">
                                         {{ $loan->guarantor->name }}</p>
                                     <p class="text-xs text-slate-500 font-bold uppercase tracking-tighter mt-1">
-                                        {{ $loan->guarantor->relationship }} • {{ $loan->guarantor->phone }}</p>
+                                        {{ $loan->guarantor_business_financials['relationship'] ?? $loan->guarantor->relationship }} • {{ $loan->guarantor->phone }}</p>
                                 </div>
                                 <span
                                     class="px-2 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded text-[9px] font-black border border-emerald-200">{{ $loan->guarantor->type }}</span>
@@ -184,7 +184,7 @@
                                 <span class="text-xs font-black text-slate-400 uppercase italic leading-none">Net Take
                                     Home / Capacity</span>
                                 <span
-                                    class="text-xl font-black text-indigo-600">₦{{ number_format($loan->guarantor->net_monthly_income, 2) }}</span>
+                                    class="text-xl font-black text-indigo-600">₦{{ number_format($loan->guarantor_business_financials['income'] ?? $loan->guarantor->net_monthly_income, 2) }}</span>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-slate-700">
@@ -196,7 +196,7 @@
                                 <div>
                                     <p class="text-[9px] font-black text-slate-400 uppercase">Employment Sector</p>
                                     <p class="text-xs dark:text-slate-300 italic">
-                                        {{ $loan->guarantor->job_sector ?? 'Unspecified' }}</p>
+                                        {{ $loan->guarantor_business_financials['source'] ?? $loan->guarantor->job_sector ?? 'Unspecified' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -299,11 +299,29 @@
                                 <td class="px-6 py-4 text-sm font-black dark:text-white">
                                     ₦{{ number_format($schedule->total_due + $penalty, 2) }}</td>
                                 <td class="px-8 py-4 text-right">
-                                    <span
-                                        class="px-2.5 py-1 text-[9px] font-black rounded-lg uppercase tracking-widest
-                                        {{ $schedule->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-50 text-amber-600' }}">
-                                        {{ $schedule->status }}
-                                    </span>
+                                    <div class="flex items-center justify-end gap-3">
+                                        @if($schedule->status === 'paid')
+                                            <span class="px-2.5 py-1.5 text-[9px] font-black rounded-lg uppercase tracking-widest bg-emerald-100 text-emerald-700">
+                                                {{ $schedule->status }}
+                                            </span>
+                                        @else
+                                            <!-- Standard badges for everyone else to see -->
+                                            <span class="px-2.5 py-1.5 text-[9px] font-black rounded-lg uppercase tracking-widest bg-amber-50 text-amber-600">
+                                                {{ $schedule->status }}
+                                            </span>
+                                            
+                                            <!-- ONLY ADMINS can verify payments -->
+                                            @if(auth()->user()->role === 'admin')
+                                                <form action="{{ route('schedules.pay', $schedule->id) }}" method="POST" class="inline-block"
+                                                      onsubmit="return confirm('Verify this installment as paid? This will record a verified cash payment.');">
+                                                    @csrf
+                                                    <button type="submit" class="px-2.5 py-1.5 text-[9px] font-black rounded-lg uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-sm border border-indigo-700">
+                                                        Verify Payment
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

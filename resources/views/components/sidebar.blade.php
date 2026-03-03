@@ -70,6 +70,9 @@
                         Proposals</x-sidebar-item>
                 </x-sidebar-dropdown>
 
+                <x-sidebar-item icon="calendar" route="reports.collections"
+                    :active="request()->routeIs('reports.collections')">Daily
+                    Collections</x-sidebar-item>
                 <x-sidebar-item icon="exclamation-circle" route="reports.arrears"
                     :active="request()->routeIs('reports.arrears')">Arrears
                     Monitor</x-sidebar-item>
@@ -111,6 +114,9 @@
 
                 <x-sidebar-item icon="banknotes" route="payments.index" :active="request()->routeIs('payments.*')">Repayment
                     Journal</x-sidebar-item>
+                <x-sidebar-item icon="calendar" route="reports.collections"
+                    :active="request()->routeIs('reports.collections')">Daily
+                    Collections</x-sidebar-item>
                 <x-sidebar-item icon="calendar-days" route="reports.arrears"
                     :active="request()->routeIs('reports.arrears')">Arrears
                     List</x-sidebar-item>

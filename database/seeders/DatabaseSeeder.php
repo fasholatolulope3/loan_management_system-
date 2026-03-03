@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 5000,
             'max_amount' => 100000,
-            'duration_months' => 20, // 20 working days
+            'installment_count' => 20, // 20 working days
             'status' => 'active'
         ]);
 
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 10000,
             'max_amount' => 500000,
-            'duration_months' => 4,
+            'installment_count' => 4,
             'status' => 'active'
         ]);
 
@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 10000,
             'max_amount' => 500000,
-            'duration_months' => 8,
+            'installment_count' => 8,
             'status' => 'active'
         ]);
 
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 10000,
             'max_amount' => 500000,
-            'duration_months' => 12,
+            'installment_count' => 12,
             'status' => 'active'
         ]);
 
@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 20000,
             'max_amount' => 2000000,
-            'duration_months' => 1,
+            'installment_count' => 1,
             'status' => 'active'
         ]);
 
@@ -99,7 +99,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 20000,
             'max_amount' => 2000000,
-            'duration_months' => 2,
+            'installment_count' => 2,
             'status' => 'active'
         ]);
 
@@ -109,7 +109,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 20000,
             'max_amount' => 2000000,
-            'duration_months' => 3,
+            'installment_count' => 3,
             'status' => 'active'
         ]);
 
@@ -120,7 +120,7 @@ class DatabaseSeeder extends Seeder
             'penalty_rate' => 0.005,
             'min_amount' => 50000,
             'max_amount' => 5000000,
-            'duration_months' => 12,
+            'installment_count' => 12,
             'status' => 'active'
         ]);
     }

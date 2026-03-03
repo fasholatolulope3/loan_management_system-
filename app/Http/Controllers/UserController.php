@@ -15,10 +15,31 @@ class UserController extends Controller
      * Requirement #6: Separate Admin interface for staff management.
      * Requirement #5: Access to Collation Center data.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
+        $query = User::with('collationCenter');
+
+        // Search Filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Date Range Filter
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('created_at', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
+        } elseif ($request->filled('start_date')) {
+            $query->where('created_at', '>=', $request->start_date . ' 00:00:00');
+        } elseif ($request->filled('end_date')) {
+            $query->where('created_at', '<=', $request->end_date . ' 23:59:59');
+        }
+
         // Eager load collationCenter to show branch names in the table
-        $users = User::with('collationCenter')->latest()->paginate(15);
+        $users = $query->latest()->paginate(15);
         $centers = CollationCenter::all();
 
         return view('admin.users.index', compact('users', 'centers'));

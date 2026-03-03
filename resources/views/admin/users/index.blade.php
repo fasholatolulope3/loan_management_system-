@@ -19,11 +19,40 @@
 
                 <!-- Display any Flash Success Messages -->
                 {{-- @if (session('success'))
-                    <div
-                        class="mb-6 p-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-700 rounded-lg shadow-sm">
-                        {{ session('success') }}
-                    </div>
+                <div
+                    class="mb-6 p-4 bg-emerald-100 border-l-4 border-emerald-500 text-emerald-700 rounded-lg shadow-sm">
+                    {{ session('success') }}
+                </div>
                 @endif --}}
+
+                <!-- Requirement: Reporting & Staff Filtering -->
+                <div
+                    class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mb-6">
+                    <form method="GET" action="{{ route('users.index') }}"
+                        class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2">
+                            <x-text-input type="text" name="search" placeholder="Search by Name, Email, or Phone..."
+                                value="{{ request('search') }}"
+                                class="w-full dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl" />
+                        </div>
+                        <div>
+                            <x-text-input type="date" name="start_date" placeholder="Start Date"
+                                value="{{ request('start_date') }}"
+                                class="w-full dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl" />
+                        </div>
+                        <div>
+                            <x-text-input type="date" name="end_date" placeholder="End Date"
+                                value="{{ request('end_date') }}"
+                                class="w-full dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-xl" />
+                        </div>
+                        <div class="md:col-span-4 flex justify-end">
+                            <button type="submit"
+                                class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 dark:hover:bg-indigo-400 dark:hover:text-white transition shadow-md">
+                                Filter Staff
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
                 <div
                     class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 rounded-[2rem]">

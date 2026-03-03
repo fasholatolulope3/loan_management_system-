@@ -49,7 +49,8 @@
                                 {{ $client->user?->name ?? 'Deleted/Unknown' }}
                             </h3>
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                                {{ $client->employment_status }}</p>
+                                {{ $client->employment_status }}
+                            </p>
                         </div>
 
                         <div class="space-y-4">
@@ -88,7 +89,8 @@
                                     <div class="flex justify-between items-start mb-2">
                                         <p
                                             class="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight">
-                                            {{ $guarantor->name }}</p>
+                                            {{ $guarantor->name }}
+                                        </p>
                                         <span
                                             class="text-[8px] font-black bg-indigo-600 text-white px-2 py-0.5 rounded uppercase">{{ $guarantor->type ?? 'Standard' }}</span>
                                     </div>
@@ -167,19 +169,19 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
                                     @forelse($client->loans as $loan)
-                                        <tr
-                                            class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition duration-300">
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition duration-300">
                                             <td class="px-8 py-5 whitespace-nowrap">
                                                 <div class="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {{ $loan->product->name }} Plan</div>
+                                                    {{ $loan->product->name }} Plan
+                                                </div>
                                                 <div class="text-[10px] text-indigo-500 font-black uppercase">
-                                                    {{ $loan->duration_months }} Installments</div>
+                                                    {{ $loan->installment_count }} Installments
+                                                </div>
                                             </td>
                                             <td class="px-6 py-5 whitespace-nowrap">
                                                 <div class="text-sm font-black text-slate-900 dark:text-white">
                                                     ₦{{ number_format($loan->amount, 2) }}</div>
-                                                <div
-                                                    class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">
+                                                <div class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">
                                                     Rate: {{ $loan->interest_rate }}%</div>
                                             </td>
                                             <td
@@ -189,7 +191,7 @@
                                             <td class="px-6 py-5 whitespace-nowrap">
                                                 <span
                                                     class="px-3 py-1 text-[9px] font-black rounded-lg uppercase
-                                                    {{ $loan->status === 'active' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-gray-100 text-gray-700 border border-gray-200' }}">
+                                                        {{ $loan->status === 'active' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-gray-100 text-gray-700 border border-gray-200' }}">
                                                     {{ $loan->status }}
                                                 </span>
                                             </td>

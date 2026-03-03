@@ -18,7 +18,7 @@ class Loan extends Model
         'guarantor_id',         // MISSING FIX: Required to link the guarantor to this specific proposal
         'amount',
         'interest_rate',
-        'duration_months',
+        'installment_count',
         'start_date',
         'end_date',
         'status',

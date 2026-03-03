@@ -79,11 +79,13 @@
 
                         <!-- Repayment Period -->
                         <div>
-                            <x-input-label for="duration_months" value="Number of Repayments" />
-                            <x-text-input name="duration_months" class="block mt-1 w-full dark:bg-slate-950"
-                                type="number" :value="old('duration_months')" required
-                                placeholder="Total installments" />
-                            <p class="mt-1 text-[10px] text-slate-500">e.g. 12 days for Daily, 4 weeks for Weekly.</p>
+                            <x-input-label for="installment_count" value="Total Number of Installments" />
+                            <x-text-input name="installment_count" id="installment_count"
+                                class="block mt-1 w-full dark:bg-slate-950" type="number"
+                                :value="old('installment_count')" required
+                                placeholder="e.g. 20 for Daily, 4 for Weekly" />
+                            <p class="mt-1 text-[10px] text-slate-500 italic">Total payments to be made
+                                (Daily/Weekly/Monthly)</p>
                         </div>
 
                         <!-- Operational Status -->

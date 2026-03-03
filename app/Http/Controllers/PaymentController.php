@@ -164,4 +164,67 @@ class PaymentController extends Controller
             return back()->with('success', 'Transaction verified successfully.');
         });
     }
+
+    /**
+     * QUICK ACTION: Directly mark a schedule as paid and auto-record a verified cash payment.
+     */
+    public function markPaid(Request $request, LoanSchedule $schedule)
+    {
+        // Security check: ONLY Admins can directly verify cash payments
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized. Only Administrators can verify payments.');
+        }
+
+        return DB::transaction(function () use ($schedule, $request) {
+            $loan = $schedule->loan;
+
+            // 1. Calculate any accrued penalty if overdue
+            $daysLate = now() > $schedule->due_date && $schedule->status !== 'paid'
+                ? now()->diffInDays($schedule->due_date)
+                : 0;
+            $penalty = $schedule->principal_amount * 0.005 * $daysLate;
+            $amountToPay = $schedule->total_due + $penalty;
+
+            // 2. Create a "Verified" payment record automatically
+            $payment = Payment::create([
+                'loan_id' => $loan->id,
+                'schedule_id' => $schedule->id,
+                'type' => 'repayment',
+                'amount_paid' => $amountToPay,
+                'method' => 'cash', // Assuming cash for direct verification
+                'reference' => 'DIR-PAY-' . strtoupper(uniqid()),
+                'receipt_path' => null, // No receipt uploaded
+                'verification_status' => 'verified',
+                'verified_by' => Auth::id(),
+                'verified_at' => now(),
+                'payment_date' => now(),
+                'captured_by' => Auth::id(),
+            ]);
+
+            // 3. Update the Schedule Status
+            $schedule->update([
+                'status' => 'paid',
+                'accrued_penalty' => $penalty // Assuming this field exists, otherwise we'll just track it in payments
+            ]);
+
+            // 4. Update overall Loan status if all schedules are paid
+            $remainingSchedules = $loan->schedules()
+                ->where('status', '!=', 'paid')
+                ->count();
+
+            if ($remainingSchedules === 0) {
+                $loan->update(['status' => 'completed']);
+            }
+
+            // 5. Audit Log
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'payment_verified_direct',
+                'description' => "Directly verified cash payment of ₦" . number_format($amountToPay, 2) . " for Schedule #{$schedule->id}",
+                'ip_address' => request()->ip()
+            ]);
+
+            return back()->with('success', 'Installment directly marked as paid.');
+        });
+    }
 }
