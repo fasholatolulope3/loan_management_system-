@@ -396,20 +396,22 @@ const AnimatedForm = memo(function AnimatedForm({
   };
 
   return (
-    <section className='max-md:w-full flex flex-col gap-4 w-96 mx-auto'>
-      <BoxReveal boxColor='var(--skeleton)' duration={0.3}>
-        <h2 className='font-bold text-3xl text-neutral-800 dark:text-neutral-200'>
-          {header}
-        </h2>
-      </BoxReveal>
-
-      {subHeader && (
-        <BoxReveal boxColor='var(--skeleton)' duration={0.3} className='pb-2'>
-          <p className='text-neutral-600 text-sm max-w-sm dark:text-neutral-300'>
-            {subHeader}
-          </p>
+    <section className='max-md:w-full flex flex-col gap-8 w-96 mx-auto py-8'>
+      <div className="flex flex-col gap-2">
+        <BoxReveal boxColor='var(--skeleton)' duration={0.3}>
+          <h2 className='font-bold text-4xl text-neutral-800 dark:text-neutral-100'>
+            {header}
+          </h2>
         </BoxReveal>
-      )}
+
+        {subHeader && (
+          <BoxReveal boxColor='var(--skeleton)' duration={0.3} className='pb-2'>
+            <p className='text-neutral-500 text-base max-w-sm dark:text-neutral-400'>
+              {subHeader}
+            </p>
+          </BoxReveal>
+        )}
+      </div>
 
       {sessionStatus && (
         <BoxReveal boxColor='var(--skeleton)' duration={0.3} className='pb-2'>
@@ -423,7 +425,7 @@ const AnimatedForm = memo(function AnimatedForm({
       <form method="POST" action={action} onSubmit={handleSubmit}>
         <input type="hidden" name="_token" value={csrfToken} />
 
-        <section className={`grid grid-cols-1 mb-4 gap-4`}>
+        <section className={`grid grid-cols-1 mb-6 gap-6`}>
           {fields.map((field) => (
             <section key={field.name} className='flex flex-col gap-2'>
               <BoxReveal boxColor='var(--skeleton)' duration={0.3}>

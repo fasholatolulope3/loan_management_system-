@@ -92,8 +92,8 @@ export function LoginApp({
     csrfToken,
     serverErrors,
     sessionStatus,
-    header: 'Executive Access',
-    subHeader: 'Secure sign in for authorized PDEI personnel.',
+    header: 'Login',
+    subHeader: '',
     fields: [
       {
         label: 'Email',
