@@ -111,7 +111,7 @@ export function LoginApp({
         placeholder: 'Enter your secure password',
       },
     ],
-    submitButton: 'Authenticate Pipeline',
+    submitButton: 'Login',
     textVariantButton: 'Forgot your password?',
     goTo: goToForgotPassword
   };

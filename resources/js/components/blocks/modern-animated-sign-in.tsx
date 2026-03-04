@@ -425,7 +425,7 @@ const AnimatedForm = memo(function AnimatedForm({
       <form method="POST" action={action} onSubmit={handleSubmit}>
         <input type="hidden" name="_token" value={csrfToken} />
 
-        <section className={`grid grid-cols-1 mb-6 gap-6`}>
+        <section className={`grid grid-cols-1 mb-10 gap-8`}>
           {fields.map((field) => (
             <section key={field.name} className='flex flex-col gap-2'>
               <BoxReveal boxColor='var(--skeleton)' duration={0.3}>
@@ -498,6 +498,7 @@ const AnimatedForm = memo(function AnimatedForm({
           boxColor='var(--skeleton)'
           duration={0.3}
           overflow='visible'
+          className="mt-4"
         >
           <button
             className='bg-gradient-to-br relative group/btn from-zinc-200 dark:from-zinc-900
