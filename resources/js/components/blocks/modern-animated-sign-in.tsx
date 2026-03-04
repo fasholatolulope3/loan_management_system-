@@ -399,8 +399,8 @@ const AnimatedForm = memo(function AnimatedForm({
   };
 
   return (
-    <section className='max-md:w-full flex flex-col gap-8 w-96 mx-auto py-8'>
-      <div className="flex flex-col gap-2">
+    <section className='max-md:w-full flex flex-col gap-6 w-96 mx-auto'>
+      <div className="flex flex-col gap-1">
         <BoxReveal boxColor='var(--skeleton)' duration={0.3}>
           <h2 className='font-bold text-4xl text-neutral-800 dark:text-neutral-100'>
             {header}
@@ -443,7 +443,7 @@ const AnimatedForm = memo(function AnimatedForm({
         </button>
       </BoxReveal>
 
-      <div className="relative flex items-center gap-4 my-2">
+      <div className="relative flex items-center gap-4 my-1">
         <div className="h-px w-full bg-white/5 border-t border-dashed border-white/10"></div>
         <span className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold px-4">or</span>
         <div className="h-px w-full bg-white/5 border-t border-dashed border-white/10"></div>
@@ -461,7 +461,7 @@ const AnimatedForm = memo(function AnimatedForm({
       <form method="POST" action={action} onSubmit={handleSubmit}>
         <input type="hidden" name="_token" value={csrfToken} />
 
-        <section className={`grid grid-cols-1 mb-10 gap-8`}>
+        <section className={`grid grid-cols-1 mb-6 gap-6`}>
           {fields.map((field) => (
             <section key={field.name} className='flex flex-col gap-2'>
               <BoxReveal boxColor='var(--skeleton)' duration={0.3}>
