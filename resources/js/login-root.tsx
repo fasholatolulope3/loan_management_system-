@@ -92,27 +92,27 @@ export function LoginApp({
     csrfToken,
     serverErrors,
     sessionStatus,
-    header: 'Login',
-    subHeader: '',
+    header: 'Welcome back',
+    subHeader: 'Sign in to your account',
     fields: [
       {
         label: 'Email',
         name: 'email',
-        required: true,
         type: 'email' as const,
-        placeholder: 'Enter your administrative email',
-        defaultValue: oldEmail
+        placeholder: 'Enter your email address',
+        defaultValue: oldEmail,
+        required: true,
       },
       {
         label: 'Password',
         name: 'password',
-        required: true,
         type: 'password' as const,
-        placeholder: 'Enter your secure password',
+        placeholder: 'Enter your password',
+        required: true,
       },
     ],
-    submitButton: 'Login',
-    textVariantButton: 'Forgot your password?',
+    submitButton: 'Sign in',
+    textVariantButton: 'Forgot password?',
     goTo: goToForgotPassword
   };
 
