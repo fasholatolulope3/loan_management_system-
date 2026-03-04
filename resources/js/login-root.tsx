@@ -131,7 +131,7 @@ export function LoginApp({
       </span>
 
       {/* Right Side (Form) */}
-      <div className='w-full lg:w-1/2 relative z-10'>
+      <div className='w-full lg:w-1/2 flex flex-col h-screen relative z-10 bg-zinc-950/80 backdrop-blur-xl border-l border-white/5 shadow-2xl overflow-y-auto'>
         <AuthTabs
           formFields={formFields}
           action={routeLogin}

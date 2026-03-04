@@ -589,14 +589,11 @@ const AuthTabs = memo(function AuthTabs({
   action
 }: AuthTabsProps) {
   return (
-    <div className='flex max-lg:justify-center w-full md:w-auto relative z-10'>
-      {/* Right Side */}
-      <div className='w-full lg:w-1/2 h-[100dvh] flex flex-col justify-center items-center max-lg:px-[10%] bg-zinc-950/80 backdrop-blur-xl border-l border-white/5 shadow-2xl'>
-        <AnimatedForm
-          {...formFields}
-          action={action}
-        />
-      </div>
+    <div className='w-full h-full flex flex-col justify-center items-center px-4 md:px-10 overflow-y-auto'>
+      <AnimatedForm
+        {...formFields}
+        action={action}
+      />
     </div>
   );
 });
