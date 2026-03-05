@@ -13,11 +13,47 @@
     }">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
 
-            @if ($loan->review_notes)
-                <div class="mb-8 p-6 bg-amber-50 border-l-8 border-amber-500 rounded-r-[2rem] shadow-lg animate-pulse">
-                    <h3 class="text-xs font-black uppercase text-amber-700 tracking-widest mb-2 italic">⚠️ Underwriter's
-                        Adjustment Feedback:</h3>
-                    <p class="text-sm font-bold text-amber-900 leading-relaxed">"{{ $loan->review_notes }}"</p>
+            @if ($loan->reviews->where('is_addressed', false)->count() > 0)
+                <div
+                    class="mb-10 bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 animate-in slide-in-from-top-4 duration-700">
+                    <div class="px-8 py-5 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                        <h3 class="text-[10px] font-black uppercase text-amber-500 tracking-[0.2em] flex items-center">
+                            <x-heroicon-s-clipboard-document-list class="w-4 h-4 mr-3" />
+                            Outstanding Underwriting Directives
+                        </h3>
+                        <span class="text-[9px] font-black text-white/30 uppercase tracking-widest">Action Required</span>
+                    </div>
+
+                    <div class="p-8 space-y-6">
+                        @foreach($loan->reviews->where('is_addressed', false) as $review)
+                            <div
+                                class="bg-white/5 p-6 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-colors">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span
+                                            class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest {{ $review->priority === 'High' ? 'bg-red-500/20 text-red-400' : ($review->priority === 'Medium' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400') }}">
+                                            {{ $review->priority }} Priority
+                                        </span>
+                                        <span class="text-[9px] font-black text-white/50 uppercase tracking-widest italic">
+                                            Focus: {{ $review->category }}
+                                        </span>
+                                    </div>
+                                    <span
+                                        class="text-[8px] font-black text-white/30 uppercase italic">{{ $review->created_at->diffForHumans() }}</span>
+                                </div>
+                                <p
+                                    class="text-sm font-medium text-slate-300 leading-relaxed italic border-l-2 border-amber-500/50 pl-4 py-1">
+                                    "{{ $review->comment }}"
+                                </p>
+                            </div>
+                        @endforeach
+                        <div class="mt-4 flex items-center gap-3 px-2">
+                            <x-heroicon-s-information-circle class="w-4 h-4 text-amber-500/50" />
+                            <p class="text-[9px] font-bold text-slate-500 uppercase italic">Field Officer Instructions:
+                                Please address the specific directives above before resubmitting this credit file for
+                                executive review.</p>
+                        </div>
+                    </div>
                 </div>
             @endif
 

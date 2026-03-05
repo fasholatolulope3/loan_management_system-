@@ -222,4 +222,9 @@ class Loan extends Model
     {
         return $this->hasMany(ClientDocument::class, 'loan_id');
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(LoanReviewLog::class)->orderBy('created_at', 'desc');
+    }
 }

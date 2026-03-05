@@ -320,6 +320,12 @@ class LoanController extends Controller
                 'approval_status' => 'pending_review',
             ]);
 
+            // Requirement #8: Resolve Open Underwriting Memorandum
+            $loan->reviews()->where('is_addressed', false)->update([
+                'is_addressed' => true,
+                'addressed_at' => now(),
+            ]);
+
             AuditLog::create([
                 'user_id' => Auth::id(),
                 'action' => 'loan_proposal_adjusted',
@@ -420,14 +426,28 @@ class LoanController extends Controller
      */
     public function requestAdjustment(Request $request, Loan $loan): RedirectResponse
     {
-        $request->validate(['notes' => 'required|string']);
-
-        $loan->update([
-            'approval_status' => 'adjustment_needed',
-            'review_notes' => $request->notes
+        $request->validate([
+            'category' => 'required|string',
+            'priority' => 'required|string',
+            'notes' => 'required|string'
         ]);
 
-        return back()->with('warning', 'Loan File sent back to field officer for adjustments.');
+        return DB::transaction(function () use ($request, $loan) {
+            $loan->update([
+                'approval_status' => 'adjustment_needed',
+                'review_notes' => $request->notes // Keep for backward compatibility/legacy views
+            ]);
+
+            $loan->reviews()->create([
+                'user_id' => Auth::id(),
+                'category' => $request->category,
+                'priority' => $request->priority,
+                'comment' => $request->notes,
+                'is_addressed' => false
+            ]);
+
+            return back()->with('warning', 'Formal Underwriting Memorandum issued to field officer.');
+        });
     }
 
     public function arrears(Request $request): View

@@ -57,17 +57,47 @@
                     <div x-show="showAdjustment"
                         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
                         x-cloak>
-                        <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-2xl max-w-md w-full">
-                            <h3 class="text-lg font-black uppercase mb-4">Underwriting Notes</h3>
+                        <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-2xl max-w-lg w-full">
+                            <h3 class="text-xl font-black uppercase mb-6 flex items-center gap-3">
+                                <x-heroicon-s-clipboard-document-check class="w-6 h-6 text-amber-500" />
+                                Underwriting Memorandum
+                            </h3>
                             <form action="{{ route('loans.adjustment', $loan) }}" method="POST">
                                 @csrf @method('PATCH')
-                                <textarea name="notes" rows="4" class="w-full rounded-2xl border-gray-300 dark:bg-slate-950 mb-4"
-                                    placeholder="Officer: Reduce principal by 10% due to low liquidity..." required></textarea>
-                                <div class="flex gap-2">
+                                
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Review Category</label>
+                                        <select name="category" required class="w-full rounded-2xl border-slate-200 dark:bg-slate-950 text-xs font-bold uppercase tracking-tight">
+                                            <option value="KYC & Verification">KYC & Verification</option>
+                                            <option value="Financial Discrepancy">Financial Discrepancy</option>
+                                            <option value="Collateral Assessment">Collateral Assessment</option>
+                                            <option value="Guarantor Compliance">Guarantor Compliance</option>
+                                            <option value="Underwriting Query">Underwriting Query</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Urgency / Priority</label>
+                                        <select name="priority" required class="w-full rounded-2xl border-slate-200 dark:bg-slate-950 text-xs font-bold uppercase tracking-tight">
+                                            <option value="Info">Information Only</option>
+                                            <option value="Medium" selected>Standard Review</option>
+                                            <option value="High">Urgent Correction</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2 mb-6">
+                                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Underwriter Directives</label>
+                                    <textarea name="notes" rows="4" class="w-full rounded-2xl border-slate-200 dark:bg-slate-950 text-sm font-medium"
+                                        placeholder="Specific instructions for the field officer..." required></textarea>
+                                </div>
+
+                                <div class="flex gap-4">
                                     <button type="button" @click="showAdjustment = false"
-                                        class="flex-1 py-3 text-xs font-black uppercase text-slate-400">Cancel</button>
-                                    <x-primary-button class="flex-1 justify-center bg-amber-600">Send to
-                                        Staff</x-primary-button>
+                                        class="flex-1 py-4 text-xs font-black uppercase text-slate-400 hover:text-slate-600 transition">Cancel</button>
+                                    <button type="submit" class="flex-1 py-4 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-amber-500/20 transition">
+                                        Issue Memorandum
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -376,13 +406,59 @@
                 </table>
             </div>
 
-            <!-- Requirement #8: Display Review Notes if Adjusted -->
-            @if ($loan->review_notes)
-                <div
-                    class="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-3xl border border-amber-200 border-dashed animate-in slide-in-from-bottom duration-1000">
-                    <h4 class="text-[10px] font-black uppercase text-amber-700 dark:text-amber-500 mb-2 italic">
-                        Official Review Feedback</h4>
-                    <p class="text-sm font-medium dark:text-slate-200">"{{ $loan->review_notes }}"</p>
+            <!-- Requirement #8: Formal Underwriting Memorandum / Audit Trail -->
+            @if ($loan->reviews->count() > 0)
+                <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div class="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b dark:border-slate-700 flex justify-between items-center">
+                        <h3 class="text-xs font-black uppercase text-amber-600 tracking-widest flex items-center">
+                            <x-heroicon-s-clipboard-document-list class="w-5 h-5 mr-3" />
+                            Official Underwriting Memorandum
+                        </h3>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Formal Audit Trail</span>
+                    </div>
+                    
+                    <div class="p-8 space-y-6">
+                        @foreach($loan->reviews as $review)
+                            <div class="relative pl-8 pb-6 last:pb-0 border-l-2 {{ $review->is_addressed ? 'border-slate-200 dark:border-slate-700' : 'border-amber-500' }}">
+                                <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 bg-white dark:bg-slate-800 {{ $review->is_addressed ? 'border-slate-200 dark:border-slate-700' : 'border-amber-500' }}"></div>
+                                
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest {{ $review->priority === 'High' ? 'bg-red-100 text-red-700' : ($review->priority === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
+                                            {{ $review->priority }} Priority
+                                        </span>
+                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">
+                                            Category: {{ $review->category }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        @if($review->is_addressed)
+                                            <span class="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                                <x-heroicon-s-check-circle class="w-3 h-3" /> Addressed
+                                            </span>
+                                        @else
+                                            <span class="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-black uppercase tracking-widest border border-amber-100 animate-pulse">
+                                                <x-heroicon-s-exclamation-circle class="w-3 h-3" /> Pending Correction
+                                            </span>
+                                        @endif
+                                        <time class="text-[9px] font-black text-slate-400 uppercase">{{ $review->created_at->format('M d, Y @ H:i') }}</time>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                                        "{{ $review->comment }}"
+                                    </p>
+                                    <div class="mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50 flex justify-between items-center px-1">
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Issued By: Underwriter #{{ $review->user->id }} (Executive Committee)</p>
+                                        @if($review->addressed_at)
+                                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic">Closed: {{ $review->addressed_at->format('M d, Y') }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             @endif
 
