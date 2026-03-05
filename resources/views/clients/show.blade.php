@@ -2,29 +2,52 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
+                <nav class="flex mb-4" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="{{ route('clients.index') }}"
+                                class="inline-flex items-center text-xs font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition">
+                                Registry
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <x-heroicon-s-chevron-right class="w-3 h-3 text-slate-300 mx-2" />
+                                <span
+                                    class="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Member
+                                    Dossier</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
                 <h2
-                    class="font-black text-2xl text-gray-800 dark:text-slate-200 uppercase tracking-tighter leading-none">
-                    Member Dossier: {{ $client->user?->name ?? 'Orphaned Account' }}
+                    class="font-black text-3xl text-gray-900 dark:text-white uppercase tracking-tighter leading-none mb-2">
+                    {{ $client->user?->name ?? 'Orphaned Account' }}
                 </h2>
-                <div class="flex items-center gap-2 mt-2">
+                <div class="flex flex-wrap items-center gap-3">
                     <span
-                        class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded text-[9px] font-black uppercase tracking-widest">
-                        Registry ID: #{{ str_pad($client->id, 5, '0', STR_PAD_LEFT) }}
+                        class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20">
+                        REG #{{ str_pad($client->id, 5, '0', STR_PAD_LEFT) }}
                     </span>
                     <span
-                        class="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-[9px] font-black uppercase tracking-widest">
-                        Branch: {{ $client->user?->collationCenter?->center_code ?? 'Main' }}
+                        class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                        {{ $client->user?->collationCenter?->center_code ?? 'MAIN' }} //
+                        {{ $client->user?->collationCenter?->name ?? 'HQ' }}
+                    </span>
+                    <span
+                        class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-200 dark:border-emerald-800">
+                        VERIFIED BY: {{ $client->officer?->name ?? 'SYSTEM' }}
                     </span>
                 </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2 justify-end">
                 <a href="{{ route('clients.edit', $client) }}"
-                    class="inline-flex items-center px-6 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-white rounded-xl font-black text-xs uppercase tracking-widest transition">
-                    Modify Profile
+                    class="inline-flex items-center px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-900 transition shadow-sm">
+                    <x-heroicon-s-pencil-square class="w-4 h-4 mr-2" /> Modify Profile
                 </a>
                 <a href="{{ route('loans.create', ['client_id' => $client->id]) }}"
-                    class="inline-flex items-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition transform active:scale-95">
-                    <x-heroicon-o-plus class="w-4 h-4 mr-2 stroke-[3px]" /> Initiate Loan Proposal
+                    class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition transform active:scale-95">
+                    <x-heroicon-s-plus-circle class="w-4 h-4 mr-2" /> Initiate Credit Proposal
                 </a>
             </div>
         </div>
@@ -32,361 +55,404 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                <!-- SIDEBAR: IDENTITY CARD (L4 - R8) -->
-                <div class="lg:col-span-4 space-y-8">
-                    <!-- Profile Stats -->
+            <!-- SECTION 1: MASTER IDENTITY DOSSIER -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden mb-12">
+                <div class="grid grid-cols-1 lg:grid-cols-12">
+
+                    <!-- Profile Sidebar -->
                     <div
-                        class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700">
-                        <div class="text-center border-b dark:border-slate-700 pb-6 mb-6">
-                            <div
-                                class="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-black text-4xl mx-auto mb-4 border-2 border-indigo-100 dark:border-indigo-800 shadow-inner">
-                                {{ substr($client->user?->name ?? '?', 0, 1) }}
+                        class="lg:col-span-4 bg-slate-50 dark:bg-slate-900/50 p-10 md:p-14 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800">
+                        <div class="text-center mb-10">
+                            <div class="relative inline-block">
+                                <div
+                                    class="w-32 h-32 bg-white dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-5xl shadow-2xl border-4 border-white dark:border-slate-700 mx-auto">
+                                    {{ substr($client->user?->name ?? '?', 0, 1) }}
+                                </div>
+                                <div
+                                    class="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-2xl shadow-lg ring-4 ring-slate-50 dark:ring-slate-900">
+                                    <x-heroicon-s-check-badge class="w-6 h-6" />
+                                </div>
                             </div>
                             <h3
-                                class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">
-                                {{ $client->user?->name ?? 'Deleted/Unknown' }}
+                                class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mt-6 mb-1">
+                                {{ $client->user?->name }}
                             </h3>
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
-                                {{ $client->employment_status }}
+                            <p
+                                class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] italic">
+                                MEMBER ACCOUNT // ACT-{{ $client->id }}
                             </p>
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">Phone</span>
-                                <span
-                                    class="text-sm font-bold dark:text-slate-300">{{ $client->user?->phone ?? 'N/A' }}</span>
+                        <div class="space-y-6">
+                            <div
+                                class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                                <p
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b dark:border-slate-700 pb-2">
+                                    Primary Contact</p>
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-3">
+                                        <x-heroicon-s-envelope class="w-4 h-4 text-slate-300" />
+                                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
+                                            {{ $client->user?->email }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <x-heroicon-s-phone class="w-4 h-4 text-slate-300" />
+                                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                            {{ $client->user?->phone }}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">Date of Birth</span>
-                                <span
-                                    class="text-sm font-bold dark:text-slate-300">{{ $client->date_of_birth->format('d M, Y') }}
-                                    ({{ $client->date_of_birth->age }} yrs)</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">National ID</span>
-                                <span
-                                    class="text-sm font-bold dark:text-slate-300 font-mono tracking-tighter">{{ $client->national_id }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-[10px] font-black text-slate-400 uppercase">BVN Status</span>
-                                <span
-                                    class="text-sm font-bold dark:text-slate-300 font-mono tracking-tighter text-indigo-600">{{ $client->bvn }}</span>
-                            </div>
-                            <div class="border-t dark:border-slate-700 pt-4">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Residential
-                                    Address</span>
-                                <p class="text-xs font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
+
+                            <div
+                                class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                                <p
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b dark:border-slate-700 pb-2">
+                                    Residential Location</p>
+                                <p
+                                    class="text-[11px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
                                     {{ $client->address }}
                                 </p>
                             </div>
-                            <div class="flex justify-between border-t dark:border-slate-700 pt-4">
-                                <span
-                                    class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Self-Reported
-                                    Income</span>
-                                <span
-                                    class="text-sm font-black text-emerald-600">₦{{ number_format($client->income, 2) }}</span>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- Guarantors Assessment List (Requirement #7) -->
-                    <div
-                        class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700">
-                        <h4 class="font-black text-xs uppercase text-slate-400 tracking-[0.2em] mb-6 flex items-center">
-                            <x-heroicon-s-shield-check class="w-4 h-4 mr-2 text-emerald-500" /> Active Guarantors (Form
-                            CF4)
-                        </h4>
+                    <!-- Exhaustive Data Grid -->
+                    <div class="lg:col-span-8 p-10 md:p-14 space-y-12">
+                        <div>
+                            <h4
+                                class="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-[0.2em] mb-8 flex items-center">
+                                <span class="w-8 h-[1px] bg-indigo-600 mr-4"></span>
+                                VERIFICATION DATA DOSSIER
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        National Identity Number</p>
+                                    <p
+                                        class="text-sm font-black text-slate-900 dark:text-white font-mono tracking-tighter bg-slate-50 dark:bg-slate-900 px-3 py-1 rounded-lg inline-block">
+                                        {{ $client->national_id }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Bank
+                                        Verification Number (BVN)</p>
+                                    <p
+                                        class="text-sm font-black text-slate-900 dark:text-white font-mono tracking-tighter bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-lg inline-block">
+                                        {{ $client->bvn }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date
+                                        of Birth</p>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">
+                                        {{ $client->date_of_birth->format('F d, Y') }} <span
+                                            class="text-xs text-slate-400 ml-2">({{ $client->date_of_birth->age }}
+                                            Years)</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        Employment Context</p>
+                                    <p class="text-sm font-black text-slate-900 dark:text-white uppercase italic">
+                                        {{ $client->employment_status }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        Reported Annual Revenue</p>
+                                    <p class="text-2xl font-black text-emerald-600">
+                                        ₦{{ number_format($client->income, 2) }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        Registry Enrollment</p>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">
+                                        {{ $client->created_at->format('M d, Y @ H:i') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-                        <div class="space-y-4">
-                            @forelse($client->guarantors as $guarantor)
+                        <!-- Officer Observations -->
+                        @if($client->officer_comment)
+                            <div
+                                class="bg-indigo-900 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden">
+                                <x-heroicon-s-chat-bubble-bottom-center-text
+                                    class="absolute right-[-10px] top-[-10px] w-32 h-32 opacity-10" />
+                                <h5 class="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-300 mb-4 italic">
+                                    Internal Forensic Observations</h5>
+                                <p class="text-lg font-bold leading-relaxed italic relative z-10">
+                                    "{{ $client->officer_comment }}"
+                                </p>
+                            </div>
+                        @endif
+
+                        <!-- SECTION 2: CREDIT PORTFOLIO SUMMIT -->
+                        <div class="pt-10 border-t dark:border-slate-700">
+                            <h4 class="text-xs font-black uppercase text-slate-400 tracking-[0.2em] mb-8">Active Credit
+                                Standing</h4>
+                            <div class="grid grid-cols-2 gap-6">
                                 <div
-                                    class="group p-5 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-transparent hover:border-indigo-200 dark:hover:border-indigo-900 transition">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div>
+                                    class="bg-slate-50 dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                    <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
+                                        Active Debt Exposure</p>
+                                    <p class="text-xl font-black text-slate-900 dark:text-white italic">
+                                        ₦{{ number_format($client->loans->where('status', 'active')->sum('amount'), 2) }}
+                                    </p>
+                                </div>
+                                <div
+                                    class="bg-slate-50 dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                    <p class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">Total
+                                        Arrears Value</p>
+                                    <p class="text-xl font-black text-red-500 italic">
+                                        ₦{{ number_format($client->loans->sum(fn($loan) => $loan->totalArrearsAmount()), 2) }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: GUARANTOR FORENSIC ASSESSMENT -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                @foreach($client->guarantors as $guarantor)
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                        <div
+                            class="px-10 py-8 bg-slate-50 dark:bg-slate-900/50 border-b dark:border-slate-700 flex justify-between items-center">
+                            <h4
+                                class="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-widest italic">
+                                Guarantor Profile: {{ $guarantor->name }}</h4>
+                            <span
+                                class="px-2 py-0.5 bg-indigo-600 text-white rounded text-[8px] font-black uppercase tracking-widest">{{ $guarantor->type ?? 'IDENTIFIED' }}</span>
+                        </div>
+                        <div class="p-10 space-y-8">
+                            <div class="grid grid-cols-2 gap-8">
+                                <div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        Relationship</p>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white uppercase">
+                                        {{ $guarantor->relationship }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Identity & Status</p>
+                                    <p class="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase">
+                                        {{ $guarantor->sex === 'M' ? 'Male' : 'Female' }} // {{ $guarantor->marital_status ?? 'NOT SET' }}
+                                    </p>
+                                    <p class="text-[9px] font-bold text-slate-400 mt-0.5">
+                                        Born: {{ $guarantor->date_of_birth ? $guarantor->date_of_birth->format('M d, Y') : 'N/A' }} 
+                                        ({{ $guarantor->dependent_persons ?? 0 }} Dependents)
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Verified
+                                        Phone</p>
+                                    <p class="text-sm font-black text-slate-900 dark:text-white">{{ $guarantor->phone }}</p>
+                                </div>
+                                <div class="col-span-2">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Permanent
+                                        Residence</p>
+                                    <p
+                                        class="text-[11px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                                        {{ $guarantor->address }}</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-6">
+                                <p
+                                    class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest border-b dark:border-slate-800 pb-2 flex items-center">
+                                    <x-heroicon-s-briefcase class="w-3 h-3 mr-2" /> Economic Standing
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                            Employer / Biz Name</p>
+                                        <p class="text-sm font-bold text-slate-900 dark:text-white capitalize">
+                                            {{ $guarantor->employer_name ?? 'NOT RECORDED' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Job
+                                            Sector</p>
+                                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                            {{ $guarantor->job_sector ?? 'GENERAL' }}</p>
+                                    </div>
+                                    @if($guarantor->employer_address)
+                                        <div class="col-span-full">
+                                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                                Office / Biz Location</p>
                                             <p
-                                                class="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight">
-                                                {{ $guarantor->name }}
-                                            </p>
-                                            <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-tighter">
-                                                {{ $guarantor->relationship }} • {{ $guarantor->phone }}
-                                            </p>
-                                        </div>
-                                        <span
-                                            class="text-[8px] font-black bg-indigo-600 text-white px-2 py-0.5 rounded uppercase leading-none">{{ $guarantor->type ?? 'Standard' }}</span>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-y-2 mb-3 border-t dark:border-slate-800 pt-3">
-                                        <div>
-                                            <span class="text-[8px] font-black text-slate-400 uppercase block">Gender</span>
-                                            <span
-                                                class="text-[10px] font-bold dark:text-slate-300 uppercase">{{ $guarantor->sex ?? 'N/A' }}</span>
-                                        </div>
-                                        @if($guarantor->net_monthly_income > 0)
-                                            <div>
-                                                <span class="text-[8px] font-black text-emerald-500 uppercase block">Verified
-                                                    Income</span>
-                                                <span
-                                                    class="text-[10px] font-black text-emerald-600">₦{{ number_format($guarantor->net_monthly_income) }}</span>
-                                            </div>
-                                        @endif
-                                        @if($guarantor->employer_name)
-                                            <div class="col-span-2">
-                                                <span class="text-[8px] font-black text-slate-400 uppercase block">Employer /
-                                                    Position</span>
-                                                <span
-                                                    class="text-[10px] font-bold dark:text-slate-300 capitalize">{{ $guarantor->employer_name }}
-                                                    ({{ $guarantor->position ?? 'N/A' }})</span>
-                                            </div>
-                                        @endif
-                                        @if($guarantor->business_activity)
-                                            <div class="col-span-2">
-                                                <span class="text-[8px] font-black text-slate-400 uppercase block">Business
-                                                    Activity</span>
-                                                <span
-                                                    class="text-[10px] font-bold dark:text-slate-300 capitalize">{{ $guarantor->business_activity }}
-                                                    (Monthly Sales:
-                                                    ₦{{ number_format($guarantor->avg_monthly_sales ?? 0) }})</span>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    @if($guarantor->spouse_name)
-                                        <div
-                                            class="bg-white dark:bg-slate-800/50 p-3 rounded-2xl mb-3 border dark:border-slate-700">
-                                            <span class="text-[8px] font-black text-slate-400 uppercase block mb-1">Guarantor
-                                                Spouse</span>
-                                            <p class="text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                                                {{ $guarantor->spouse_name }} ({{ $guarantor->spouse_phone ?? 'No Phone' }})
+                                                class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-start gap-2">
+                                                <x-heroicon-s-map-pin class="w-3 h-3 mt-1 text-slate-400 shrink-0" />
+                                                {{ $guarantor->employer_address }}
                                             </p>
                                         </div>
                                     @endif
-
                                     <div>
-                                        <span class="text-[8px] font-black text-slate-400 uppercase block">Residential
-                                            Address</span>
-                                        <p class="text-[9px] text-slate-500 dark:text-slate-400 italic leading-tight">
-                                            {{ $guarantor->address ?? 'No address on file' }}
+                                        <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">
+                                            Monthly Discretionary Income</p>
+                                        <p class="text-lg font-black text-emerald-600">
+                                            ₦{{ number_format($guarantor->net_monthly_income + $guarantor->avg_monthly_sales) }}
                                         </p>
                                     </div>
                                 </div>
-                            @empty
-                                <div class="text-center py-6">
-                                    <p class="text-xs text-slate-400 font-medium italic italic">No verified assessments
-                                        linked.</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MAIN CONTENT: CREDIT LEDGER & HISTORY -->
-                <div class="lg:col-span-8 space-y-8">
-
-                    <!-- Credit Stats Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-indigo-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-                            <h4 class="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Portfolio
-                                Total Disbursed</h4>
-                            <p class="text-3xl font-black italic">
-                                ₦{{ number_format($client->loans->where('status', 'active')->sum('amount'), 2) }}</p>
-                            <x-heroicon-o-arrow-up-right class="absolute right-6 top-6 w-10 h-10 opacity-10" />
-                        </div>
-                        <div
-                            class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-700 relative overflow-hidden">
-                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Net
-                                Financial Arrears</h4>
-                            <p class="text-3xl font-black text-red-500 italic">
-                                @php
-                                    $arrears = $client->loans->sum(fn($loan) => $loan->totalArrearsAmount());
-                                @endphp
-                                ₦{{ number_format($arrears, 2) }}
-                            </p>
-                            <x-heroicon-o-exclamation-triangle
-                                class="absolute right-6 top-6 w-10 h-10 text-red-100 dark:text-red-900/30" />
-                        </div>
-                    </div>
-
-                    <!-- Master Loan Ledger Table -->
-                    <div
-                        class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
-                        <div class="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b dark:border-slate-700">
-                            <h4
-                                class="text-sm font-black uppercase text-slate-900 dark:text-white tracking-widest italic">
-                                Historical Credit Performance</h4>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-100 dark:divide-slate-700">
-                                <thead>
-                                    <tr>
-                                        <th
-                                            class="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Protocol Type</th>
-                                        <th
-                                            class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Approved Value</th>
-                                        <th
-                                            class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Date Started</th>
-                                        <th
-                                            class="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Current Status</th>
-                                        <th class="px-8 py-4 text-right"></th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
-                                    @forelse($client->loans as $loan)
-                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition duration-300">
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <div class="text-sm font-bold text-slate-900 dark:text-white">
-                                                    {{ $loan->product->name }} Plan
-                                                </div>
-                                                <div class="text-[10px] text-indigo-500 font-black uppercase">
-                                                    {{ $loan->installment_count }} Installments
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-5 whitespace-nowrap">
-                                                <div class="text-sm font-black text-slate-900 dark:text-white">
-                                                    ₦{{ number_format($loan->amount, 2) }}</div>
-                                                <div class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">
-                                                    Rate: {{ $loan->interest_rate }}%</div>
-                                            </td>
-                                            <td
-                                                class="px-6 py-5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                                {{ $loan->start_date ? $loan->start_date->format('d M, Y') : 'Pre-Approval' }}
-                                            </td>
-                                            <td class="px-6 py-5 whitespace-nowrap">
-                                                <span
-                                                    class="px-3 py-1 text-[9px] font-black rounded-lg uppercase
-                                                                        {{ $loan->status === 'active' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-gray-100 text-gray-700 border border-gray-200' }}">
-                                                    {{ $loan->status }}
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-right">
-                                                <a href="{{ route('loans.show', $loan) }}"
-                                                    class="text-indigo-600 dark:text-indigo-400 font-black uppercase text-[10px] border-b-2 border-indigo-100 dark:border-indigo-900 hover:border-indigo-600 transition-all duration-300">
-                                                    Manage Assessment &rarr;
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="py-20 text-center">
-                                                <x-heroicon-o-document-magnifying-glass
-                                                    class="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-2" />
-                                                <p class="text-xs text-slate-400 uppercase font-black tracking-widest">
-                                                    No previous credit files detected.</p>
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Client Document Repository (Requirement #1 & #6) -->
-                    <div
-                        class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden mt-8">
-                        <div
-                            class="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 border-b dark:border-slate-700 flex justify-between items-center">
-                            <h4
-                                class="text-sm font-black uppercase text-slate-900 dark:text-white tracking-widest italic flex items-center">
-                                <x-heroicon-s-folder-open class="w-5 h-5 mr-3 text-rose-500" />
-                                KYC Document Repository
-                            </h4>
-                            <div class="text-[10px] font-black uppercase text-slate-400">
-                                Verified by: <span
-                                    class="text-indigo-600">{{ $client->officer?->name ?? 'System' }}</span>
                             </div>
-                        </div>
 
-                        <div class="p-8">
-                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                @forelse($client->documents as $doc)
-                                    <div
-                                        class="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-3xl border border-slate-100 dark:border-slate-800 group transition">
-                                        <p class="text-[9px] font-black uppercase text-slate-400 mb-3 tracking-widest">
-                                            {{ str_replace('_', ' ', $doc->type) }}
-                                        </p>
-
-                                        @if(in_array($doc->mime_type, ['image/jpeg', 'image/png', 'image/jpg']))
-                                            <div class="relative overflow-hidden rounded-2xl aspect-square mb-3">
-                                                <img src="{{ asset('storage/' . $doc->file_path) }}"
-                                                    class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                                <div
-                                                    class="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
-                                                        class="p-2 bg-white rounded-full shadow-xl">
-                                                        <x-heroicon-s-eye class="w-4 h-4 text-indigo-600" />
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div
-                                                class="aspect-square bg-slate-100 dark:bg-slate-900 rounded-2xl flex flex-col items-center justify-center mb-3">
-                                                <x-heroicon-s-document-text class="w-10 h-10 text-slate-300 mb-2" />
-                                                <span class="text-[8px] font-black text-slate-500 uppercase">PDF DOCUMENT</span>
-                                            </div>
-                                        @endif
-
-                                        <a href="{{ asset('storage/' . $doc->file_path) }}" download
-                                            class="flex items-center justify-center w-full py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[9px] font-black uppercase text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition">
-                                            <x-heroicon-s-arrow-down-tray class="w-3 h-3 mr-1.5" /> Download
-                                        </a>
-                                    </div>
-                                @empty
-                                    <div class="col-span-full py-12 text-center">
-                                        <x-heroicon-o-cloud-arrow-up
-                                            class="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                                        <p class="text-xs text-slate-400 font-black uppercase tracking-widest">No verified
-                                            archives present.</p>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-
-                        <div
-                            class="px-8 py-4 bg-slate-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex justify-between items-center text-[9px] font-black uppercase text-slate-400">
-                            <span>Registration Date: {{ $client->created_at->format('d M, Y H:i') }}</span>
-                            <span>Total Archives: {{ $client->documents->count() }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Officer Assessment (Requirement #5) -->
-                    @if($client->officer_comment)
-                        <div
-                            class="bg-indigo-50 dark:bg-slate-900 p-8 rounded-[2.5rem] border-2 border-indigo-100 dark:border-indigo-900/30 mt-8">
-                            <h4
-                                class="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-widest mb-4 flex items-center">
-                                <x-heroicon-s-chat-bubble-bottom-center-text class="w-4 h-4 mr-2" />
-                                Internal Officer Assessment
-                            </h4>
-                            <p class="text-sm text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed">
-                                "{{ $client->officer_comment }}"
-                            </p>
-                            <div class="mt-6 flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-[10px] font-black">
-                                        {{ substr($client->officer?->name ?? 'S', 0, 1) }}
-                                    </div>
+                            @if($guarantor->spouse_name)
+                                <div
+                                    class="px-6 py-4 bg-slate-50 dark:bg-slate-950/30 rounded-2xl border border-transparent hover:border-slate-200 transition flex justify-between items-center">
                                     <div>
-                                        <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase">
-                                            {{ $client->officer?->name ?? 'System' }}
-                                        </p>
-                                        <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tight italic">Field
-                                            Verification Officer</p>
+                                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">
+                                            Authorized Spouse Proxy</p>
+                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                            {{ $guarantor->spouse_name }}</p>
                                     </div>
+                                    <p class="text-[10px] font-black text-indigo-500">{{ $guarantor->spouse_phone }}</p>
                                 </div>
-                            </div>
+                            @endif
                         </div>
-                    @endif
-                </div>
+                    </div>
+                @endforeach
 
+                @if($client->guarantors->count() < 1)
+                    <div
+                        class="col-span-full bg-red-50 dark:bg-red-900/10 p-12 rounded-[3rem] border-2 border-dashed border-red-200 dark:border-red-900/30 text-center">
+                        <x-heroicon-o-shield-exclamation class="w-16 h-16 text-red-300 mx-auto mb-4" />
+                        <h5 class="text-lg font-black text-red-800 dark:text-red-400 uppercase tracking-widest">CRITICAL
+                            RISK ALERT</h5>
+                        <p
+                            class="text-sm text-red-600 dark:text-red-500/70 font-bold max-w-md mx-auto italic leading-relaxed">
+                            No verified guarantor records found for this member account. This file is currently
+                            non-compliant with standard credit policy.</p>
+                    </div>
+                @endif
             </div>
+
+            <!-- SECTION 4: EXHAUSTIVE DOCUMENT ARCHIVE -->
+            <div class="bg-slate-900 rounded-[3rem] shadow-2xl overflow-hidden mb-12">
+                <div class="px-10 py-8 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+                    <h4 class="text-xs font-black uppercase text-indigo-400 tracking-[0.2em] flex items-center">
+                        <x-heroicon-s-folder-open class="w-5 h-5 mr-3 text-rose-500" /> Member Document Repository
+                    </h4>
+                    <span
+                        class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ $client->documents->count() }}
+                        Files Archived</span>
+                </div>
+
+                <div class="p-10 md:p-14">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        @foreach($client->documents as $doc)
+                            <div class="group relative">
+                                <p
+                                    class="text-[9px] font-black uppercase text-white/40 mb-4 tracking-widest text-center border-b border-white/5 pb-2">
+                                    {{ str_replace('_', ' ', $doc->type) }}
+                                </p>
+
+                                @if(in_array($doc->mime_type, ['image/jpeg', 'image/png', 'image/jpg']))
+                                    <div
+                                        class="relative aspect-square rounded-[2rem] overflow-hidden bg-white/5 ring-1 ring-white/10 group-hover:ring-indigo-500 transition-all duration-500 shadow-2xl">
+                                        <img src="{{ asset('storage/' . $doc->file_path) }}"
+                                            class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                                        <div
+                                            class="absolute inset-0 bg-indigo-950/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-sm">
+                                            <div class="flex gap-3 scale-75 group-hover:scale-100 transition duration-500">
+                                                <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
+                                                    class="p-4 bg-white rounded-full shadow-2xl hover:bg-slate-100 transition">
+                                                    <x-heroicon-s-eye class="w-5 h-5 text-indigo-900" />
+                                                </a>
+                                                <a href="{{ asset('storage/' . $doc->file_path) }}" download
+                                                    class="p-4 bg-indigo-600 rounded-full shadow-2xl hover:bg-slate-900 transition">
+                                                    <x-heroicon-s-arrow-down-tray class="w-5 h-5 text-white" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div
+                                        class="aspect-square bg-white/5 rounded-[2.5rem] flex flex-col items-center justify-center ring-1 ring-white/10 group-hover:ring-rose-500 transition-all duration-500 shadow-xl">
+                                        <x-heroicon-s-document-text
+                                            class="w-16 h-16 text-white/10 mb-2 group-hover:text-rose-500 transition" />
+                                        <span class="text-[9px] font-black text-white/20 uppercase">PDF ARCHIVE</span>
+                                        <div
+                                            class="absolute inset-x-4 bottom-4 flex gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition duration-500">
+                                            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank"
+                                                class="flex-1 py-3 bg-white/10 rounded-xl text-[9px] font-black text-white text-center hover:bg-white/20 transition">VIEW</a>
+                                            <a href="{{ asset('storage/' . $doc->file_path) }}" download
+                                                class="flex-1 py-3 bg-indigo-600 rounded-xl text-[9px] font-black text-white text-center hover:bg-indigo-700 transition">SAVE</a>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: HISTORICAL LEDGER -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
+                <div class="px-10 py-6 border-b dark:border-slate-700 flex justify-between items-center">
+                    <h4 class="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-[0.2em] italic">
+                        Internal Registry Ledger</h4>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-50 dark:divide-slate-700">
+                        <thead class="bg-slate-50/50 dark:bg-slate-900/30">
+                            <tr>
+                                <th
+                                    class="px-10 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Protocol Type</th>
+                                <th
+                                    class="px-10 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Approved Value</th>
+                                <th
+                                    class="px-10 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Activation Date</th>
+                                <th
+                                    class="px-10 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
+                                    Current Status</th>
+                                <th class="px-10 py-5"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                            @foreach($client->loans as $loan)
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                                    <td class="px-10 py-6">
+                                        <p
+                                            class="text-sm font-black text-slate-900 dark:text-white mb-0.5 capitalize italic">
+                                            {{ $loan->product->name }}</p>
+                                        <p
+                                            class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">
+                                            {{ $loan->installment_count }} PAYMENT CYCLES</p>
+                                    </td>
+                                    <td class="px-10 py-6 font-black text-sm text-slate-700 dark:text-slate-300">
+                                        ₦{{ number_format($loan->amount, 2) }}
+                                    </td>
+                                    <td class="px-10 py-6 text-xs font-bold text-slate-500">
+                                        {{ $loan->start_date ? $loan->start_date->format('M d, Y') : 'PENDING' }}
+                                    </td>
+                                    <td class="px-10 py-6 text-center">
+                                        <span
+                                            class="px-3 py-1 text-[9px] font-black rounded-lg border uppercase {{ $loan->status === 'active' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-100 dark:bg-slate-900/80 text-slate-500 border-slate-200 dark:border-slate-800' }}">
+                                            {{ $loan->status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-10 py-6 text-right">
+                                        <a href="{{ route('loans.show', $loan) }}"
+                                            class="text-xs font-black text-indigo-600 hover:text-slate-900 transition underline underline-offset-4">&rarr;
+                                            VIEW FILE</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 </x-app-layout>

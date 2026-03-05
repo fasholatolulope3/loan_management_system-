@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   ShieldCheck, 
   Database, 
@@ -13,6 +13,7 @@ import {
   Eye,
   ArrowRight
 } from "lucide-react";
+import ContactSupportModal from "./contact-support-modal";
 
 const policies = [
   {
@@ -78,6 +79,7 @@ const policies = [
 ];
 
 export default function PrivacyPolicySection() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <section id="privacy" className="relative py-24 bg-zinc-950">
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
@@ -134,7 +136,10 @@ export default function PrivacyPolicySection() {
               <p className="text-zinc-400 max-w-xl mx-auto italic">
                 "For privacy-related inquiries, please contact our designated data protection or compliance officer."
               </p>
-              <button className="px-10 py-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] flex items-center gap-2 mx-auto">
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="px-10 py-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] flex items-center gap-2 mx-auto"
+              >
                 Contact Data Officer
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -145,6 +150,11 @@ export default function PrivacyPolicySection() {
             </div>
           </div>
         </div>
+
+        <ContactSupportModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       </div>
     </section>
   );

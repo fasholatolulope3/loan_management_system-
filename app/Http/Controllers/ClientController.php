@@ -55,16 +55,21 @@ class ClientController extends Controller
             'bvn' => 'required|digits:11|unique:clients,bvn',
             'address' => 'required|string',
             'income' => 'required|numeric|min:0',
+            'employment_status' => 'required|string',
             // Primary Guarantor Data (Requirement: Mandatory at Onboarding)
             'g_name' => 'required|string|max:255',
             'g_phone' => 'required|string|max:20',
             'g_relationship' => 'required|string',
             'g_sex' => 'required|in:M,F',
+            'g_marital_status' => 'required|string',
+            'g_date_of_birth' => 'required|date|before:today',
+            'g_dependents' => 'required|integer|min:0',
             'g_address' => 'required|string',
             'g_type' => 'required|string',
             'g_spouse_name' => 'nullable|string|max:255',
             'g_spouse_phone' => 'nullable|string|max:20',
             'g_employer' => 'nullable|string|max:255',
+            'g_employer_address' => 'nullable|string',
             'g_sector' => 'nullable|string|max:255',
             'g_position' => 'nullable|string|max:255',
             'g_net_income' => 'nullable|numeric|min:0',
@@ -104,7 +109,7 @@ class ClientController extends Controller
                 'address' => $validated['address'],
                 'income' => $validated['income'],
                 'date_of_birth' => $validated['date_of_birth'],
-                'employment_status' => 'Verified By Staff',
+                'employment_status' => $validated['employment_status'],
                 'officer_comment' => $validated['officer_comment'] ?? null,
             ]);
 
@@ -114,11 +119,15 @@ class ClientController extends Controller
                 'phone' => $validated['g_phone'],
                 'relationship' => $validated['g_relationship'],
                 'sex' => $validated['g_sex'],
+                'marital_status' => $validated['g_marital_status'],
+                'date_of_birth' => $validated['g_date_of_birth'],
+                'dependent_persons' => $validated['g_dependents'],
                 'address' => $validated['g_address'],
                 'type' => $validated['g_type'],
                 'spouse_name' => $validated['g_spouse_name'],
                 'spouse_phone' => $validated['g_spouse_phone'],
                 'employer_name' => $validated['g_employer'],
+                'employer_address' => $validated['g_employer_address'],
                 'job_sector' => $validated['g_sector'],
                 'position' => $validated['g_position'],
                 'net_monthly_income' => $validated['g_net_income'] ?? 0,
@@ -182,9 +191,21 @@ class ClientController extends Controller
             'phone' => 'required|string|unique:users,phone,' . $client->user_id,
             'national_id' => 'required|string|unique:clients,national_id,' . $client->id,
             'bvn' => 'required|digits:11|unique:clients,bvn,' . $client->id,
-            'income' => 'required|numeric|min:0',
+            'income' => 'nullable|numeric|min:0',
             'address' => 'required|string',
             'employment_status' => 'required|string',
+            'officer_comment' => 'nullable|string',
+
+            // Guarantor Data in Edit Form
+            'g_name' => 'required|string|max:255',
+            'g_phone' => 'required|string|max:20',
+            'g_relationship' => 'required|string',
+            'g_address' => 'required|string',
+            'g_employer' => 'nullable|string',
+            'g_position' => 'nullable|string',
+            'g_sector' => 'nullable|string',
+            'g_employer_address' => 'nullable|string',
+            'g_net_income' => 'nullable|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($validated, $client, $request) {
@@ -202,10 +223,27 @@ class ClientController extends Controller
                 'income' => $validated['income'],
                 'address' => $validated['address'],
                 'employment_status' => $validated['employment_status'],
+                'officer_comment' => $validated['officer_comment'] ?? $client->officer_comment,
             ]);
 
+            // Update Guarantor
+            $guarantor = $client->guarantors()->first();
+            if ($guarantor) {
+                $guarantor->update([
+                    'name' => $validated['g_name'],
+                    'phone' => $validated['g_phone'],
+                    'relationship' => $validated['g_relationship'],
+                    'address' => $validated['g_address'],
+                    'employer_name' => $validated['g_employer'],
+                    'position' => $validated['g_position'],
+                    'job_sector' => $validated['g_sector'],
+                    'employer_address' => $validated['g_employer_address'],
+                    'net_monthly_income' => $validated['g_net_income'],
+                ]);
+            }
+
             return redirect()->route('clients.show', $client)
-                ->with('success', 'Profile modification synchronized successfully.');
+                ->with('success', 'Member appraisal updated successfully.');
         });
     }
 

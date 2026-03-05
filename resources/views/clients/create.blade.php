@@ -49,6 +49,35 @@
         validateStep(targetStep) {
             this.step = targetStep;
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        submitForm(e) {
+            const form = e.target;
+            const requiredElements = Array.from(form.elements).filter(el => el.hasAttribute('required'));
+            
+            for (let el of requiredElements) {
+                if (!el.value) {
+                    e.preventDefault();
+                    
+                    const stepDiv = el.closest('[x-show]');
+                    if (stepDiv) {
+                        const stepAttr = stepDiv.getAttribute('x-show');
+                        const match = stepAttr ? stepAttr.match(/step === (\d+)/) : null;
+                        
+                        if (match) {
+                            this.step = parseInt(match[1]);
+                            
+                            // Wait for Alpine x-show transition (400ms) before scrolling and focusing
+                            setTimeout(() => {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                el.focus();
+                                el.reportValidity();
+                            }, 450);
+                            
+                            return;
+                        }
+                    }
+                }
+            }
         }
     }">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
@@ -90,6 +119,7 @@
             </div>
 
             <form method="POST" action="{{ route('clients.store') }}" enctype="multipart/form-data"
+                @submit="submitForm($event)" novalidate
                 class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden transition-all duration-500">
                 @csrf
 
@@ -135,6 +165,17 @@
                                 :value="old('bvn')" required /></div>
                         <div><x-input-label value="Date of Birth" /><x-text-input type="date" name="date_of_birth"
                                 class="w-full" required /></div>
+                        <div>
+                            <x-input-label value="Employment Status" />
+                            <select name="employment_status"
+                                class="w-full mt-1 rounded-xl border-slate-200 dark:bg-slate-900 dark:text-slate-300 shadow-sm text-sm font-bold"
+                                required>
+                                <option value="Employee">Full-Time Employee</option>
+                                <option value="Business Owner">Business Owner / Self-Employed</option>
+                                <option value="Contractor">Contractor</option>
+                                <option value="Unemployed">Unemployed</option>
+                            </select>
+                        </div>
                         <div><x-input-label value="Est. Annual Income" /><x-text-input type="number" name="income"
                                 class="w-full font-bold" placeholder="₦0.00" /></div>
                         <div class="md:col-span-2">
@@ -181,6 +222,19 @@
                                 <option value="F">Female</option>
                             </select></div>
 
+                        <!-- ADDED FIELDS -->
+                        <div><x-input-label value="Guarantor Marital Status" /><select name="g_marital_status"
+                                class="w-full mt-1 rounded-xl border-slate-200 dark:bg-slate-900">
+                                <option>Single</option>
+                                <option>Married</option>
+                                <option>Widowed</option>
+                                <option>Divorced</option>
+                            </select></div>
+                        <div><x-input-label value="Guarantor Date of Birth" /><x-text-input type="date"
+                                name="g_date_of_birth" class="w-full mt-1" required /></div>
+                        <div><x-input-label value="No. of Dependents" /><x-text-input type="number" name="g_dependents"
+                                class="w-full mt-1" value="0" /></div>
+
                         <div class="md:col-span-2 pt-4 border-t dark:border-slate-700">
                             <x-input-label value="Spouse Full Name (Optional)" /><x-text-input name="g_spouse_name"
                                 class="w-full mt-1 text-xs" />
@@ -220,6 +274,8 @@
                         <div x-show="gType === 'Employee'"
                             class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-950/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
                             <div><x-input-label value="Employer Name" /><x-text-input name="g_employer"
+                                    class="w-full" /></div>
+                            <div><x-input-label value="Employer Address" /><x-text-input name="g_employer_address"
                                     class="w-full" /></div>
                             <div><x-input-label value="Job Sector" /><x-text-input name="g_sector" class="w-full" />
                             </div>
@@ -366,12 +422,43 @@
                         </div>
                     </div>
                 </div>
+                <!-- STEP 6: FINAL CONFIRMATION -->
+                <div x-show="step === 6" x-transition.opacity.duration.400ms class="p-10 md:p-14" x-cloak>
+                    <h3 class="text-2xl font-black text-indigo-600 mb-8 tracking-tighter uppercase italic">06. Final
+                        Review & Submission</h3>
 
+                    <div
+                        class="mb-8 p-6 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700 text-center">
+                        <x-heroicon-s-check-badge class="w-16 h-16 text-indigo-500 mx-auto mb-4" />
+                        <h4 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Ready to Submit</h4>
+                        <p
+                            class="text-sm text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-lg mx-auto">
+                            Please review all entries before submitting. By clicking "Submit Application", you confirm
+                            that all provided information and documents are accurate and legally binding.
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <x-input-label value="Internal Staff Assessment / Officer Comments (Optional)" />
+                        <textarea name="officer_comment"
+                            class="w-full border-slate-200 dark:bg-slate-900 rounded-[2rem] p-6 text-sm italic font-medium"
+                            rows="4"
+                            placeholder="Add any internal notes about this client's verification process..."></textarea>
+                    </div>
+
+                    <div class="mt-10 flex justify-between items-center">
+                        <button type="button" @click="step--"
+                            class="text-sm font-black uppercase text-slate-400 hover:text-slate-600 transition">
+                            &larr; Previous Step
+                        </button>
+                        <button type="submit"
+                            class="group flex items-center gap-3 bg-indigo-600 hover:bg-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl shadow-indigo-500/20 active:scale-95">
+                            SUBMIT APPLICATION
+                            <x-heroicon-s-check-circle class="w-5 h-5 group-hover:scale-110 transition" />
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </div>
-
-
-    </form>
-    </div>
     </div>
 </x-app-layout>

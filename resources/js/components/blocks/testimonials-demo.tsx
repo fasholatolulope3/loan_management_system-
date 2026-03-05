@@ -4,37 +4,37 @@ import { TestimonialsSection } from "@/components/blocks/testimonials-with-marqu
 const testimonials = [
   {
     author: {
-      name: "Emma Thompson",
-      handle: "@emmaai",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
+      name: "Chukwudi Okafor",
+      handle: "@chuks_biz",
+      avatar: "/images/avatars/chukwudi.png"
     },
-    text: "Using this AI platform has transformed how we handle data analysis. The speed and accuracy are unprecedented.",
-    href: "https://twitter.com/emmaai"
+    text: "The loan application process was seamless. I received funding for my business expansion within 24 hours. Highly recommended!",
+    href: "#"
   },
   {
     author: {
-      name: "David Park",
-      handle: "@davidtech",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+      name: "Aisha Bello",
+      handle: "@aisha_invest",
+      avatar: "/images/avatars/aisha.png"
     },
-    text: "The API integration is flawless. We've reduced our development time by 60% since implementing this solution.",
-    href: "https://twitter.com/davidtech"
+    text: "PDEC's investment plans are transparent and reliable. My portfolio has grown steadily, and the support team is always helpful.",
+    href: "#"
   },
   {
     author: {
-      name: "Sofia Rodriguez",
-      handle: "@sofiaml",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face"
+      name: "Oluwaseun Ajayi",
+      handle: "@seun_ajayi",
+      avatar: "/images/avatars/seun.png"
     },
-    text: "Finally, an AI tool that actually understands context! The accuracy in natural language processing is impressive."
+    text: "Finally, a financial partner that understands the needs of Nigerian entrepreneurs. The low interest rates are a game changer."
   }
 ]
 
 export function TestimonialsSectionDemo() {
   return (
     <TestimonialsSection
-      title="Trusted by developers worldwide"
-      description="Join thousands of developers who are already building the future with our AI platform"
+      title="Trusted by thousands of clients"
+      description="Join the community of entrepreneurs and individuals who have unlocked their financial potential with PDEC."
       testimonials={testimonials}
     />
   )

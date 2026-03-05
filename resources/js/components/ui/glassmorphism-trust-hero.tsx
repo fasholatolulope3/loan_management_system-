@@ -5,24 +5,23 @@ import {
     Target,
     Crown,
     Star,
-    // Brand Icons
-    Hexagon,
-    Triangle,
-    Command,
-    Ghost,
-    Gem,
-    Cpu,
+    // Compliance & Trust Icons
+    ShieldCheck,
+    Scale,
+    FileCheck,
+    Lock,
+    Landmark,
+    UserCheck,
 } from "lucide-react";
 
-// --- MOCK BRANDS ---
-// Replaced PNGs with Lucide icons to simulate tech logos
+// --- TRUST & COMPLIANCE INDICATORS ---
 const CLIENTS = [
-    { name: "Acme Corp", icon: Hexagon },
-    { name: "Quantum", icon: Triangle },
-    { name: "Command+Z", icon: Command },
-    { name: "Phantom", icon: Ghost },
-    { name: "Ruby", icon: Gem },
-    { name: "Chipset", icon: Cpu },
+    { name: "CBN Regulated", icon: ShieldCheck },
+    { name: "Legal Governance", icon: Scale },
+    { name: "Verified Contracts", icon: FileCheck },
+    { name: "Secure Disbursement", icon: Lock },
+    { name: "Institutional Trust", icon: Landmark },
+    { name: "Identity Verified", icon: UserCheck },
 ];
 
 // --- SUB-COMPONENTS ---
@@ -69,12 +68,13 @@ export default function HeroSection() {
 
             {/* Background Image with Gradient Mask */}
             <div
-                className="absolute inset-0 z-0 bg-[url(https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070)] bg-cover bg-center opacity-40"
+                className="absolute inset-0 z-0 bg-cover bg-center opacity-40 bg-zinc-900"
                 style={{
+                    backgroundImage: "url('/images/images.jpg')",
                     maskImage:
-                        "linear-gradient(180deg, transparent, black 0%, black 70%, transparent)",
+                        "linear-gradient(180deg, transparent, black 10%, black 90%, transparent)",
                     WebkitMaskImage:
-                        "linear-gradient(180deg, transparent, black 0%, black 70%, transparent)",
+                        "linear-gradient(180deg, transparent, black 10%, black 90%, transparent)",
                 }}
             />
 
@@ -97,9 +97,9 @@ export default function HeroSection() {
                             className="animate-fade-in delay-200 text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.9]"
                             style={{
                                 maskImage:
-                                    "linear-gradient(180deg, black 0%, black 80%, transparent 100%)",
+                                    "linear-gradient(180deg, black 0%, black 85%, transparent 100%)",
                                 WebkitMaskImage:
-                                    "linear-gradient(180deg, black 0%, black 80%, transparent 100%)",
+                                    "linear-gradient(180deg, black 0%, black 85%, transparent 100%)",
                             }}
                         >
                             Empowering Your
@@ -205,7 +205,7 @@ export default function HeroSection() {
                         {/* Marquee Card */}
                         <div className="animate-fade-in delay-500 relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 py-8 backdrop-blur-xl">
                             <h3 className="mb-6 px-8 text-sm font-medium text-zinc-400">
-                                Our Strategic Partners
+                                Our Compliance & Trust Standards
                             </h3>
 
                             <div

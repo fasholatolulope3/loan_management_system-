@@ -46,6 +46,21 @@ class UserController extends Controller
     }
 
     /**
+     * Requirement: View full staff details and authority trail.
+     */
+    public function show(User $user): View
+    {
+        $user->load([
+            'collationCenter',
+            'auditLogs' => function ($query) {
+                $query->latest()->limit(50);
+            }
+        ]);
+
+        return view('admin.users.show', compact('user'));
+    }
+
+    /**
      * Requirement #5: Admin assigning Collation Centers to new officers.
      */
     public function store(Request $request): RedirectResponse

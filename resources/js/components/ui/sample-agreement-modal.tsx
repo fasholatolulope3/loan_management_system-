@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, FileText, ShieldCheck, CheckCircle2, Download } from "lucide-react";
+import { createPortal } from "react-dom";
+import { X, FileText, ShieldCheck, CheckCircle2, Download, TrendingUp } from "lucide-react";
 
 interface SampleAgreementModalProps {
   isOpen: boolean;
@@ -20,10 +21,12 @@ export default function SampleAgreementModal({ isOpen, onClose }: SampleAgreemen
     };
   }, [isOpen]);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-10">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 sm:p-6 md:p-10">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -159,7 +162,7 @@ export default function SampleAgreementModal({ isOpen, onClose }: SampleAgreemen
                     <p className="text-xs text-zinc-500">Verification Pending</p>
                   </div>
                 </div>
- signatures           </div>
+              </div>
             </div>
 
             {/* Footer Actions */}
@@ -182,6 +185,7 @@ export default function SampleAgreementModal({ isOpen, onClose }: SampleAgreemen
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

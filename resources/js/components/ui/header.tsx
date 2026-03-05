@@ -100,7 +100,17 @@ export default function Header({
                             {NAV_ITEMS.map((item) => (
                                 <div key={item.id} className="flex flex-col gap-4 border-b border-white/5 pb-6">
                                     <div className="flex items-center justify-between group">
-                                        <span className="text-xl font-medium text-white">{item.label}</span>
+                                        {item.link && !item.subMenus ? (
+                                            <a 
+                                                href={item.link} 
+                                                className="text-xl font-medium text-white hover:text-indigo-400 transition-colors"
+                                                onClick={() => setIsMenuOpen(false)}
+                                            >
+                                                {item.label}
+                                            </a>
+                                        ) : (
+                                            <span className="text-xl font-medium text-white">{item.label}</span>
+                                        )}
                                         {item.subMenus && <ChevronRight className="w-5 h-5 text-zinc-500" />}
                                     </div>
                                     {item.subMenus && (
@@ -111,7 +121,7 @@ export default function Header({
                                                     {sub.items.map((subItem) => (
                                                         <a 
                                                             key={subItem.label} 
-                                                            href="#" 
+                                                            href={subItem.link || "#"} 
                                                             className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors"
                                                             onClick={() => setIsMenuOpen(false)}
                                                         >

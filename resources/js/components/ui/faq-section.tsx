@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Minus, HelpCircle, MessageCircle } from "lucide-react";
+import ContactSupportModal from "./contact-support-modal";
 
 const faqs = [
   {
@@ -86,6 +87,7 @@ const FaqItem = ({ question, answer, isOpen, onClick, index }: {
 
 export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   return (
     <section id="faqs" className="relative py-24 bg-zinc-950">
@@ -130,10 +132,18 @@ export default function FaqSection() {
               <p className="text-sm text-zinc-400">Our customer service team is here to assist you professionally.</p>
             </div>
           </div>
-          <button className="px-8 py-3 rounded-full bg-white text-zinc-950 font-bold hover:bg-zinc-200 transition-colors">
+          <button 
+            onClick={() => setIsContactModalOpen(true)}
+            className="px-8 py-3 rounded-full bg-white text-zinc-950 font-bold hover:bg-zinc-200 transition-colors"
+          >
             Contact Support
           </button>
         </div>
+
+        <ContactSupportModal 
+          isOpen={isContactModalOpen} 
+          onClose={() => setIsContactModalOpen(false)} 
+        />
       </div>
     </section>
   );

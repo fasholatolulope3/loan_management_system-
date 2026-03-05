@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Info, 
   Briefcase, 
@@ -14,6 +14,7 @@ import {
   Globe,
   ArrowRight
 } from "lucide-react";
+import ContactSupportModal from "./contact-support-modal";
 
 const terms = [
   {
@@ -91,6 +92,7 @@ const terms = [
 ];
 
 export default function TermsServiceSection() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <section id="terms" className="relative py-24 bg-zinc-950">
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
@@ -143,12 +145,20 @@ export default function TermsServiceSection() {
               <h4 className="text-xl font-semibold text-white">Questions about these terms?</h4>
               <p className="text-zinc-400 text-sm">Contact our compliance department for professional guidance and inquiries.</p>
             </div>
-            <button className="group px-8 py-4 rounded-full bg-white text-zinc-950 font-bold hover:bg-indigo-50 transition-all flex items-center gap-2">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="group px-8 py-4 rounded-full bg-white text-zinc-950 font-bold hover:bg-indigo-50 transition-all flex items-center gap-2"
+            >
               Compliance Inquiry
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         </div>
+
+        <ContactSupportModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       </div>
     </section>
   );

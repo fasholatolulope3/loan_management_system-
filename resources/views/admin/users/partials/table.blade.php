@@ -21,17 +21,20 @@
                                 {{ substr($user->name, 0, 1) }}
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $user->email }}</div>
+                                <a href="{{ route('users.show', $user) }}" class="group">
+                                    <div class="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition">
+                                        {{ $user->name }}</div>
+                                    <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">
+                                        {{ $user->email }}</div>
+                                </a>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                            class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
-                            {{ $user->role === 'officer' ? 'bg-blue-100 text-blue-800' : '' }}
-                            {{ $user->role === 'client' ? 'bg-gray-100 text-gray-800' : '' }}">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
+                                {{ $user->role === 'officer' ? 'bg-blue-100 text-blue-800' : '' }}
+                                {{ $user->role === 'client' ? 'bg-gray-100 text-gray-800' : '' }}">
                             {{ strtoupper($user->role) }}
                         </span>
                     </td>

@@ -54,9 +54,10 @@
                 </template>
             </div>
 
-            <form method="POST" action="{{ route('clients.store') }}"
+            <form method="POST" action="{{ route('clients.update', $client) }}"
                 class="bg-white dark:bg-slate-800 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden transition-all duration-500">
                 @csrf
+                @method('PUT')
 
                 <!-- STEP 1: PERSONAL IDENTITY (CF2 Section I) -->
                 <div x-show="step === 1" x-transition.opacity.duration.400ms class="p-10 md:p-14">
@@ -66,27 +67,27 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="md:col-span-2">
                             <x-input-label value="Full Name (Surname First)" />
-                            <x-text-input name="name" class="w-full mt-1 text-lg font-bold" :value="old('name')"
+                            <x-text-input name="name" class="w-full mt-1 text-lg font-bold" :value="old('name', $client->name)"
                                 required />
                         </div>
                         <div><x-input-label value="Email Address" /><x-text-input type="email" name="email"
-                                class="w-full" required /></div>
+                                class="w-full" :value="old('email', $client->email)" required /></div>
                         <div><x-input-label value="Phone Number" /><x-text-input name="phone" class="w-full"
-                                required /></div>
+                                :value="old('phone', $client->phone)" required /></div>
                         <div><x-input-label value="National ID (NIN)" /><x-text-input name="national_id"
-                                class="w-full font-mono" required maxlength="11" /></div>
+                                class="w-full font-mono" :value="old('national_id', $client->national_id)" required maxlength="11" /></div>
                         <div><x-input-label value="BVN" /><x-text-input name="bvn" class="w-full font-mono"
-                                required maxlength="11" /></div>
+                                :value="old('bvn', $client->bvn)" required maxlength="11" /></div>
                         <div><x-input-label value="Date of Birth" /><x-text-input type="date" name="date_of_birth"
-                                class="w-full" required /></div>
-                        <div><x-input-label value="Marital Status" /><select name="marital_status"
+                                class="w-full" :value="old('date_of_birth', $client->date_of_birth?->format('Y-m-d'))" required /></div>
+                        <div><x-input-label value="Employment Status" /><select name="employment_status"
                                 class="w-full border-slate-200 dark:bg-slate-900 rounded-xl">
-                                <option>Single</option>
-                                <option>Married</option>
-                                <option>Widowed</option>
+                                <option value="Employee" {{ old('employment_status', $client->employment_status) == 'Employee' ? 'selected' : '' }}>Employee</option>
+                                <option value="Business Owner" {{ old('employment_status', $client->employment_status) == 'Business Owner' ? 'selected' : '' }}>Business Owner</option>
+                                <option value="Unemployed" {{ old('employment_status', $client->employment_status) == 'Unemployed' ? 'selected' : '' }}>Unemployed</option>
                             </select></div>
                         <div class="md:col-span-2"><x-input-label value="Home Address" /><x-text-input name="address"
-                                class="w-full" required /></div>
+                                class="w-full" :value="old('address', $client->address)" required /></div>
                     </div>
                 </div>
 
@@ -152,16 +153,16 @@
                         </div>
                         <div class="md:col-span-2 pt-4 border-t dark:border-slate-700">
                             <x-input-label value="Guarantor Full Name" /><x-text-input name="g_name"
-                                class="w-full mt-1 font-bold" required />
+                                class="w-full mt-1 font-bold" :value="old('g_name', $client->guarantors->first()?->name)" required />
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div><x-input-label value="Phone Number" /><x-text-input name="g_phone" class="w-full"
-                                    required /></div>
+                                    :value="old('g_phone', $client->guarantors->first()?->phone)" required /></div>
                             <div><x-input-label value="Relation" /><x-text-input name="g_relationship" class="w-full"
-                                    required /></div>
+                                    :value="old('g_relationship', $client->guarantors->first()?->relationship)" required /></div>
                         </div>
                         <div><x-input-label value="Address" /><x-text-input name="g_address" class="w-full"
-                                required /></div>
+                                :value="old('g_address', $client->guarantors->first()?->address)" required /></div>
                     </div>
                 </div>
 
@@ -176,13 +177,16 @@
                         <div x-show="gType === 'Employee'"
                             class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-indigo-50 dark:bg-slate-900/50 p-8 rounded-[2.5rem]">
                             <div><x-input-label value="Employer Name" /><x-text-input name="g_employer"
-                                    class="w-full mt-1" /></div>
+                                    class="w-full mt-1" :value="old('g_employer', $client->guarantors->first()?->employer_name)" /></div>
                             <div><x-input-label value="Position" /><x-text-input name="g_position"
-                                    class="w-full mt-1" /></div>
-                            <div><x-input-label value="Sector" /><x-text-input name="g_sector" class="w-full mt-1" />
-                            </div>
+                                    class="w-full mt-1" :value="old('g_position', $client->guarantors->first()?->position)" /></div>
+                            <div><x-input-label value="Employer Address" /><x-text-input name="g_employer_address" class="w-full mt-1" 
+                                    :value="old('g_employer_address', $client->guarantors->first()?->employer_address)" /></div>
+                            <div><x-input-label value="Sector" /><x-text-input name="g_sector" class="w-full mt-1" 
+                                    :value="old('g_sector', $client->guarantors->first()?->job_sector)" /></div>
                             <div><x-input-label value="Net Monthly Income (₦)" /><x-text-input type="number"
-                                    name="g_net_income" class="w-full mt-1 font-black text-indigo-700" /></div>
+                                    name="g_net_income" class="w-full mt-1 font-black text-indigo-700" 
+                                    :value="old('g_net_income', $client->guarantors->first()?->net_monthly_income)" /></div>
                         </div>
 
                         <!-- IF BIZ OWNER -->
@@ -197,8 +201,12 @@
                                 CF4.</div>
                         </div>
 
-                        <div
-                            class="p-6 border-t-2 border-dashed border-slate-200 dark:border-slate-700 italic text-xs text-slate-500 text-center">
+                        <div class="p-6 border-t-2 border-dashed border-slate-200 dark:border-slate-700 italic text-xs text-slate-500 text-center">
+                            <div class="mb-4">
+                                <x-input-label value="Internal Officer Assessment / Comment" />
+                                <textarea name="officer_comment" rows="3" 
+                                    class="w-full mt-2 rounded-2xl border-slate-200 dark:bg-slate-900 bg-white font-bold p-4 text-slate-700 dark:text-slate-300">{{ old('officer_comment', $client->officer_comment) }}</textarea>
+                            </div>
                             "I, {{ auth()->user()->name }}, certify that all client and guarantor documents have been
                             physically verified."
                         </div>
