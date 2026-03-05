@@ -4,6 +4,7 @@ import HeroSection from '@/components/ui/glassmorphism-trust-hero';
 import FeaturesSection from '@/components/ui/features-section';
 import PricingSection from '@/components/ui/pricing-section';
 import FaqSection from '@/components/ui/faq-section';
+import LegalPoliciesSection from '@/components/ui/legal-policies-section';
 import { TestimonialsSectionDemo } from '@/components/blocks/testimonials-demo';
 import Header from '@/components/ui/header';
 
@@ -36,6 +37,7 @@ if (rootElement) {
             <PricingSection />
             <TestimonialsSectionDemo />
             <FaqSection />
+            <LegalPoliciesSection />
         </React.StrictMode>
     );
 }
