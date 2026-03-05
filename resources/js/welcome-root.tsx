@@ -1,6 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import HeroSection from '@/components/ui/glassmorphism-trust-hero';
+import FeaturesSection from '@/components/ui/features-section';
+import PricingSection from '@/components/ui/pricing-section';
+import FaqSection from '@/components/ui/faq-section';
 import { TestimonialsSectionDemo } from '@/components/blocks/testimonials-demo';
 import Header from '@/components/ui/header';
 
@@ -29,7 +32,10 @@ if (rootElement) {
     root.render(
         <React.StrictMode>
             <HeroSection />
+            <FeaturesSection />
+            <PricingSection />
             <TestimonialsSectionDemo />
+            <FaqSection />
         </React.StrictMode>
     );
 }
