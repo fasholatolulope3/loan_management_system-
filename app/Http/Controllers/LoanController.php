@@ -124,6 +124,15 @@ class LoanController extends Controller
             // Final Evaluation
             'collaterals' => 'required|array|min:1',
             'proposal_summary' => 'required|string|min:40',
+
+            // KYC Documents (NEW)
+            'nin' => 'nullable|image|max:5120',
+            'selfie' => 'nullable|image|max:5120',
+            'nepa_bill' => 'nullable|image|max:5120',
+            'shop_picture' => 'nullable|image|max:5120',
+            'house_picture' => 'nullable|image|max:5120',
+            'collateral_document' => 'nullable|mimes:pdf|max:10240',
+            'statement_of_account' => 'nullable|mimes:pdf|max:10240',
         ]);
 
         return DB::transaction(function () use ($request, $staff) {
@@ -214,6 +223,33 @@ class LoanController extends Controller
                     'market_value' => $c['market_value'],
                     'liquidation_value' => $c['market_value'] * 0.70,
                 ]);
+            }
+
+            // 5. Document Repository (Requirement #7 - KYC)
+            $documentTypes = [
+                'nin',
+                'selfie',
+                'nepa_bill',
+                'shop_picture',
+                'house_picture',
+                'collateral_document',
+                'statement_of_account'
+            ];
+
+            foreach ($documentTypes as $type) {
+                if ($request->hasFile($type)) {
+                    $file = $request->file($type);
+                    $path = $file->store('documents/' . $loan->client_id, 'public');
+
+                    $loan->documents()->create([
+                        'client_id' => $loan->client_id,
+                        'type' => $type,
+                        'file_path' => $path,
+                        'file_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
+                    ]);
+                }
             }
 
             AuditLog::create([
@@ -470,7 +506,7 @@ class LoanController extends Controller
      */
     public function show(Loan $loan): View
     {
-        $loan->load(['client.user', 'product', 'collationCenter', 'collaterals', 'payments', 'schedules']);
+        $loan->load(['client.user', 'product', 'collationCenter', 'collaterals', 'payments', 'schedules', 'documents']);
 
         // Financial Underwriting Ratios
         $ratios = [

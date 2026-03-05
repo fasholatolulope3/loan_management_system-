@@ -237,6 +237,53 @@
                 </div>
             </div>
 
+            <!-- 6. KYC & DOCUMENT ARCHIVE -->
+            <div class="bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 mb-8">
+                <div class="px-8 py-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                    <h3 class="text-sm font-black uppercase text-rose-500 tracking-widest flex items-center">
+                        <x-heroicon-s-folder-open class="w-5 h-5 mr-3 text-rose-500" /> Section IV: KYC Document Repository
+                    </h3>
+                    <span class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ $loan->documents->count() }} Files Archived</span>
+                </div>
+
+                <div class="p-8">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        @foreach($loan->documents as $doc)
+                            <div class="group relative">
+                                <p class="text-[8px] font-black uppercase text-white/40 mb-3 tracking-widest text-center border-b border-white/5 pb-2">
+                                    {{ str_replace('_', ' ', $doc->type) }}
+                                </p>
+
+                                @if(in_array($doc->mime_type, ['image/jpeg', 'image/png', 'image/jpg']))
+                                    <div class="relative aspect-square rounded-2xl overflow-hidden bg-white/5 ring-1 ring-white/10 group-hover:ring-rose-500 transition-all duration-500 shadow-xl">
+                                        <img src="{{ asset('storage/' . $doc->file_path) }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                                        <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-sm">
+                                            <div class="flex gap-2 scale-75 group-hover:scale-100 transition duration-500">
+                                                <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="p-3 bg-white rounded-full shadow-xl hover:bg-slate-100 transition">
+                                                    <x-heroicon-s-eye class="w-4 h-4 text-slate-900" />
+                                                </a>
+                                                <a href="{{ asset('storage/' . $doc->file_path) }}" download class="p-3 bg-rose-600 rounded-full shadow-xl hover:bg-rose-700 transition">
+                                                    <x-heroicon-s-arrow-down-tray class="w-4 h-4 text-white" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="aspect-square bg-white/5 rounded-2xl flex flex-col items-center justify-center ring-1 ring-white/10 group-hover:ring-rose-500 transition-all duration-500 shadow-xl relative">
+                                        <x-heroicon-s-document-text class="w-12 h-12 text-white/10 mb-2 group-hover:text-rose-500 transition" />
+                                        <span class="text-[8px] font-black text-white/20 uppercase">PDF ARCHIVE</span>
+                                        <div class="absolute inset-x-2 bottom-2 flex gap-1 opacity-0 group-hover:opacity-100 transition duration-500">
+                                            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="flex-1 py-2 bg-white/10 rounded-lg text-[8px] font-black text-white text-center hover:bg-white/20 transition uppercase tracking-tighter">View</a>
+                                            <a href="{{ asset('storage/' . $doc->file_path) }}" download class="flex-1 py-2 bg-rose-600 rounded-lg text-[8px] font-black text-white text-center hover:bg-rose-700 transition uppercase tracking-tighter">Save</a>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
             <!-- 5. AMORTIZATION LEDGER -->
             <div
                 class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
@@ -244,7 +291,7 @@
                     class="px-8 py-6 border-b dark:border-slate-700 flex justify-between items-center bg-indigo-50/20 dark:bg-slate-950/50">
                     <h3
                         class="text-sm font-black uppercase tracking-[0.2em] dark:text-white italic underline underline-offset-4 decoration-indigo-500/50 leading-none">
-                        IV. Future Repayment Amortization</h3>
+                        V. Future Repayment Amortization</h3>
                     <div class="flex items-center gap-6">
                         <div class="text-right">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Installments</p>

@@ -217,4 +217,9 @@ class Loan extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ClientDocument::class, 'loan_id');
+    }
 }

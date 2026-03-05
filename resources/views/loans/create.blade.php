@@ -14,7 +14,19 @@
         risks: [{ factor: '', mitigation: '' }],
         references: [{ name: '', phone: '' }],
         addCollateral() { this.collaterals.push({ type: 'HG', description: '', market_value: '' }) },
-        removeCollateral(index) { this.collaterals.splice(index, 1) }
+        removeCollateral(index) { this.collaterals.splice(index, 1) },
+        previews: { nin: null, selfie: null, nepa_bill: null, shop_picture: null, house_picture: null },
+        fileNames: { nin: '', selfie: '', nepa_bill: '', shop_picture: '', house_picture: '', collateral_document: '', statement_of_account: '' },
+        handleFileChange(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+            this.fileNames[type] = file.name;
+            if (['nin', 'selfie', 'nepa_bill', 'shop_picture', 'house_picture'].includes(type)) {
+                const reader = new FileReader();
+                reader.onload = (e) => { this.previews[type] = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        }
     }">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
 
@@ -31,12 +43,12 @@
 
             <!-- Progress Stepper (Requirement #7 - Order) -->
             <div class="mb-8 flex items-center justify-between px-10">
-                <template x-for="i in [1, 2, 3, 4, 5, 6]">
+                <template x-for="i in [1, 2, 3, 4, 5, 6, 7]">
                     <div class="flex items-center flex-1 last:flex-none">
                         <div :class="step >= i ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'bg-gray-200 dark:bg-slate-700 text-gray-500'"
                             class="w-10 h-10 rounded-full flex items-center justify-center font-black transition-all duration-300 transform"
                             :class="step === i ? 'scale-125' : ''" x-text="i"></div>
-                        <div x-show="i < 6" class="flex-1 h-1 bg-gray-200 dark:bg-slate-700 mx-2">
+                        <div x-show="i < 7" class="flex-1 h-1 bg-gray-200 dark:bg-slate-700 mx-2">
                             <div class="h-full bg-indigo-600 transition-all duration-500"
                                 :style="'width: ' + (step > i ? '100%' : '0%')"></div>
                         </div>
@@ -44,7 +56,7 @@
                 </template>
             </div>
 
-            <form method="POST" action="{{ route('loans.store') }}"
+            <form method="POST" action="{{ route('loans.store') }}" enctype="multipart/form-data"
                 class="bg-white dark:bg-slate-800 shadow-2xl rounded-[2.5rem] border border-slate-100 dark:border-slate-700 overflow-hidden transition-all duration-500">
                 @csrf
 
@@ -418,8 +430,109 @@
                     </div>
                 </div>
 
-                <!-- STEP 6: FINAL PROPOSAL -->
-                <div x-show="step === 6" x-transition.opacity.duration.400ms class="p-8 md:p-12">
+                <!-- STEP 6: DOCUMENT REPOSITORY -->
+                <div x-show="step === 6" x-transition.opacity.duration.400ms class="p-8 md:p-12" x-cloak>
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="bg-rose-100 dark:bg-rose-900/30 p-3 rounded-2xl">
+                            <x-heroicon-o-folder-arrow-down class="w-6 h-6 text-rose-600" />
+                        </div>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Part VI:
+                            KYC & Verification Archive</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Image Uploads -->
+                        <template x-for="field in [
+                                        {id: 'nin', label: 'National ID (NIN)', capture: 'environment'},
+                                        {id: 'selfie', label: 'Applicant Selfie', capture: 'user'},
+                                        {id: 'nepa_bill', label: 'NEPA / Utility Bill', capture: 'environment'},
+                                        {id: 'shop_picture', label: 'Business Shop Picture', capture: 'environment'},
+                                        {id: 'house_picture', label: 'Residential House Picture', capture: 'environment'}
+                                    ]">
+                            <div class="space-y-3">
+                                <label :for="field.id"
+                                    class="block text-[10px] font-black uppercase text-slate-500 tracking-widest"
+                                    x-text="field.label"></label>
+                                <div class="relative group">
+                                    <input type="file" :name="field.id" :id="field.id" accept="image/*"
+                                        :capture="field.capture" @change="handleFileChange($event, field.id)"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div
+                                        class="p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl bg-slate-50 dark:bg-slate-900/50 group-hover:border-indigo-500 transition-colors text-center">
+                                        <template x-if="!previews[field.id]">
+                                            <div class="flex flex-col items-center">
+                                                <svg class="w-8 h-8 text-slate-400 mb-2" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span
+                                                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Click
+                                                    to upload image</span>
+                                            </div>
+                                        </template>
+                                        <template x-if="previews[field.id]">
+                                            <div class="relative inline-block mt-2">
+                                                <img :src="previews[field.id]"
+                                                    class="w-full max-h-40 object-cover rounded-xl shadow-lg">
+                                                <div
+                                                    class="absolute -top-2 -right-2 bg-indigo-600 text-white p-1 rounded-full shadow-lg">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="3" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template x-if="fileNames[field.id]">
+                                            <p class="mt-2 text-[10px] font-black text-indigo-600 truncate"
+                                                x-text="fileNames[field.id]"></p>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- PDF Uploads -->
+                        <template x-for="field in [
+                                        {id: 'collateral_document', label: 'Collateral Document (PDF)'},
+                                        {id: 'statement_of_account', label: 'Bank Statement (PDF)'}
+                                    ]">
+                            <div class="space-y-3">
+                                <label :for="field.id"
+                                    class="block text-[10px] font-black uppercase text-slate-500 tracking-widest"
+                                    x-text="field.label"></label>
+                                <div class="relative group">
+                                    <input type="file" :name="field.id" :id="field.id" accept=".pdf"
+                                        @change="handleFileChange($event, field.id)"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div
+                                        class="p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl bg-slate-50 dark:bg-slate-900/50 group-hover:border-indigo-500 transition-colors text-center">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-8 h-8 text-slate-400 mb-2" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <span
+                                                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload
+                                                PDF Document</span>
+                                            <template x-if="fileNames[field.id]">
+                                                <p class="mt-2 text-[10px] font-black text-indigo-600 truncate"
+                                                    x-text="fileNames[field.id]"></p>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- STEP 7: FINAL PROPOSAL -->
+                <div x-show="step === 7" x-transition.opacity.duration.400ms class="p-8 md:p-12">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="bg-indigo-600 p-3 rounded-2xl shadow-lg">
                             <x-heroicon-o-document-check class="w-6 h-6 text-white" />
@@ -452,11 +565,11 @@
                     </div>
 
                     <div class="flex gap-4">
-                        <button type="button" x-show="step < 6" @click="step++"
+                        <button type="button" x-show="step < 7" @click="step++"
                             class="bg-indigo-600 text-white px-10 py-3.5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all">
                             Next Assessment Step
                         </button>
-                        <button type="submit" x-show="step === 6"
+                        <button type="submit" x-show="step === 7"
                             class="bg-slate-950 dark:bg-white dark:text-slate-900 text-white px-12 py-3.5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-[0_10px_25px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 transition-all">
                             Authorize & Submit Proposal
                         </button>

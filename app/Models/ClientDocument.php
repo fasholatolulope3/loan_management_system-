@@ -9,6 +9,7 @@ class ClientDocument extends Model
 {
     protected $fillable = [
         'client_id',
+        'loan_id',
         'type',
         'file_path',
         'file_name',
@@ -19,5 +20,10 @@ class ClientDocument extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function loan(): BelongsTo
+    {
+        return $this->belongsTo(Loan::class);
     }
 }
