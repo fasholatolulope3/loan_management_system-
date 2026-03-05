@@ -2,72 +2,57 @@ import * as React from "react";
 import MegaMenu from "@/components/ui/mega-menu";
 import type { MegaMenuItem } from "@/components/ui/mega-menu";
 import {
-  Cpu,
-  Globe,
-  Eye,
-  Shield,
   Rocket,
-  Box,
-  Search,
-  Palette,
-  BookOpen,
+  Shield,
   FileText,
-  Newspaper,
+  Lock,
+  MessageCircle,
+  TrendingUp,
+  CreditCard,
+  Building2,
+  Users,
+  Target,
+  Scale,
+  Gavel
 } from "lucide-react";
 
 export const NAV_ITEMS: MegaMenuItem[] = [
-  {
-    id: 1,
-    label: "Products",
-    subMenus: [
-      {
-        title: "Loan Suite",
-        items: [
-          {
-            label: "Personal Loans",
-            description: "Flexible financing for your needs",
-            icon: Cpu,
-          },
-          {
-            label: "Business Loans",
-            description: "Empower your business growth",
-            icon: Search,
-          },
-        ],
-      },
-      {
-        title: "Managed Infrastructure",
-        items: [
-          {
-            label: "PDEI Portal",
-            description: "Secure administrative access",
-            icon: Shield,
-          },
-          {
-            label: "Audit Logs",
-            description: "Trace every transaction",
-            icon: Eye,
-          },
-        ],
-      },
-    ],
-  },
+  { id: 1, label: "About Us", link: "#about" },
   {
     id: 2,
     label: "Solutions",
     subMenus: [
       {
-        title: "Use Cases",
+        title: "Services",
         items: [
           {
-            label: "Micro-financing",
-            description: "Small loans, big impact",
-            icon: Rocket,
+            label: "Core Features",
+            description: "Structured lending & investment",
+            icon: Target,
+            link: "#features"
           },
           {
-            label: "Asset Financing",
-            description: "Acquire what you need today",
-            icon: Box,
+            label: "Pricing & Terms",
+            description: "Transparent risk-based framework",
+            icon: CreditCard,
+            link: "#pricing"
+          },
+        ],
+      },
+      {
+        title: "Support",
+        items: [
+          {
+            label: "FAQs",
+            description: "Common questions answered",
+            icon: MessageCircle,
+            link: "#faqs"
+          },
+          {
+            label: "Testimonials",
+            description: "What our clients say",
+            icon: Users,
+            link: "#testimonials"
           },
         ],
       },
@@ -75,27 +60,34 @@ export const NAV_ITEMS: MegaMenuItem[] = [
   },
   {
     id: 3,
-    label: "Resources",
+    label: "Legal",
     subMenus: [
       {
-        title: "Company",
+        title: "Policies",
         items: [
           {
-            label: "Blog",
-            description: "Latest news and updates",
-            icon: Newspaper,
+            label: "Legal Status",
+            description: "Regulatory status & governance",
+            icon: Scale,
+            link: "#legal"
           },
           {
-            label: "Contact",
-            description: "Get in touch with us",
-            icon: Globe,
+            label: "Terms of Service",
+            description: "Agreement governing use",
+            icon: Gavel,
+            link: "#terms"
+          },
+          {
+            label: "Privacy Policy",
+            description: "Data protection & privacy",
+            icon: Shield,
+            link: "#privacy"
           },
         ],
       },
     ],
   },
-  { id: 4, label: "Enterprise", link: "#" },
-  { id: 5, label: "Pricing", link: "#" },
+  { id: 4, label: "Contact", link: "#faqs" },
 ];
 
 const MegaMenuDemo = () => {

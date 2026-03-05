@@ -9,7 +9,9 @@ import {
   Building2,
   BarChart3,
   CornerDownRight,
+  Info
 } from "lucide-react";
+import SampleAgreementModal from "./sample-agreement-modal";
 
 const pricingCategories = [
   {
@@ -51,6 +53,8 @@ const coreValues = [
 ];
 
 export default function PricingSection() {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
   return (
     <section id="pricing" className="relative py-24 bg-zinc-950 overflow-hidden">
       {/* Decorative background glow */}
@@ -102,44 +106,36 @@ export default function PricingSection() {
           ))}
         </div>
 
-        {/* Global Terms Alert */}
+        {/* Global Terms Alert - Refined based on Mockup */}
         <div className="animate-fade-in delay-700">
-          <div className="relative overflow-hidden p-8 md:p-12 rounded-[2rem] border border-indigo-500/20 bg-indigo-500/5 backdrop-blur-xl">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <Scale className="w-32 h-32 text-indigo-400" />
-            </div>
-
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h4 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
-                  <ShieldCheck className="w-6 h-6 text-indigo-400" />
-                  Responsible Financial Practices
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {coreValues.map((value, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-indigo-500 mt-0.5 shrink-0" />
-                      <span className="text-sm text-zinc-300 leading-snug">{value}</span>
-                    </div>
-                  ))}
+          <div className="relative overflow-hidden p-8 md:p-10 rounded-3xl border border-white/5 bg-[#0a0a0b] shadow-2xl">
+            <div className="relative z-10 flex flex-col gap-8">
+              <div className="flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shrink-0">
+                  <Info className="w-5 h-5 text-indigo-400" />
                 </div>
+                <p className="text-sm text-zinc-400 leading-relaxed italic pr-4">
+                  All facilities and returns are subject to due diligence, internal approval, and prevailing regulatory guidelines. Pricing is determined based on risk profile and tenure.
+                </p>
               </div>
-
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
-                <div className="flex gap-3 text-zinc-400">
-                  <AlertCircle className="w-5 h-5 text-indigo-400 shrink-0" />
-                  <p className="text-xs leading-relaxed italic">
-                    All facilities and returns are subject to due diligence, internal approval, and prevailing regulatory guidelines. Pricing is determined based on risk profile and tenure.
-                  </p>
-                </div>
-                <button className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-2 transition-all">
-                  <FileText className="w-4 h-4" />
-                  View Sample Agreement
-                </button>
-              </div>
+              
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="w-full group relative overflow-hidden py-4 md:py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center justify-center gap-3 transition-all ring-1 ring-white/20 hover:ring-white/40 shadow-[0_0_30px_rgba(79,70,229,0.3)]"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:animate-shimmer" />
+                <FileText className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <span>View Sample Agreement</span>
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Modal Integration */}
+        <SampleAgreementModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       </div>
     </section>
   );
