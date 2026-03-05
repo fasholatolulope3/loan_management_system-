@@ -16,6 +16,8 @@ class Guarantor extends Model
         'name',
         'phone',
         'relationship',
+        'spouse_name',
+        'spouse_phone',
         'address',
 
         // Identity Additions (Requirement #7 / CF4 Page 1)
@@ -37,6 +39,8 @@ class Guarantor extends Model
         'date_of_visit_residence',
 
         // Financial Analysis Table (Requirement #7 / CF4 Section III)
+        'business_activity',
+        'avg_monthly_sales',
         'business_financials'
     ];
 

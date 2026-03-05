@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{User, Client, Guarantor, AuditLog};
+use App\Models\{User, Client, ClientDocument, Guarantor, AuditLog};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Hash, Auth};
 use Illuminate\View\View;
@@ -59,7 +59,26 @@ class ClientController extends Controller
             'g_name' => 'required|string|max:255',
             'g_phone' => 'required|string|max:20',
             'g_relationship' => 'required|string',
+            'g_sex' => 'required|in:M,F',
             'g_address' => 'required|string',
+            'g_type' => 'required|string',
+            'g_spouse_name' => 'nullable|string|max:255',
+            'g_spouse_phone' => 'nullable|string|max:20',
+            'g_employer' => 'nullable|string|max:255',
+            'g_sector' => 'nullable|string|max:255',
+            'g_position' => 'nullable|string|max:255',
+            'g_net_income' => 'nullable|numeric|min:0',
+            'g_biz_activity' => 'nullable|string|max:255',
+            'g_biz_sales' => 'nullable|numeric|min:0',
+            // Client Documents
+            'nin' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'selfie' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'nepa_bill' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'shop_picture' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'house_picture' => 'required|image|mimes:jpg,jpeg,png|max:5120',
+            'collateral_document' => 'required|file|mimes:pdf|max:5120',
+            'statement_of_account' => 'required|file|mimes:pdf|max:5120',
+            'officer_comment' => 'nullable|string|max:1000',
         ]);
 
         return DB::transaction(function () use ($validated, $request) {
@@ -79,12 +98,14 @@ class ClientController extends Controller
 
             // 2. Create the Client Profile
             $client = $user->client()->create([
+                'officer_id' => $staff->id,
                 'national_id' => $validated['national_id'],
                 'bvn' => $validated['bvn'],
                 'address' => $validated['address'],
                 'income' => $validated['income'],
                 'date_of_birth' => $validated['date_of_birth'],
                 'employment_status' => 'Verified By Staff',
+                'officer_comment' => $validated['officer_comment'] ?? null,
             ]);
 
             // 3. Create the Primary Guarantor (Pre-links for future Loan Proposals)
@@ -92,11 +113,46 @@ class ClientController extends Controller
                 'name' => $validated['g_name'],
                 'phone' => $validated['g_phone'],
                 'relationship' => $validated['g_relationship'],
+                'sex' => $validated['g_sex'],
                 'address' => $validated['g_address'],
-                'type' => 'Employee', // Initial type
+                'type' => $validated['g_type'],
+                'spouse_name' => $validated['g_spouse_name'],
+                'spouse_phone' => $validated['g_spouse_phone'],
+                'employer_name' => $validated['g_employer'],
+                'job_sector' => $validated['g_sector'],
+                'position' => $validated['g_position'],
+                'net_monthly_income' => $validated['g_net_income'] ?? 0,
+                'business_activity' => $validated['g_biz_activity'],
+                'avg_monthly_sales' => $validated['g_biz_sales'] ?? 0,
             ]);
 
-            // 4. Log the audit trace (Requirement #5)
+            // 4. Store Documents
+            $documentTypes = [
+                'nin',
+                'selfie',
+                'nepa_bill',
+                'shop_picture',
+                'house_picture',
+                'collateral_document',
+                'statement_of_account'
+            ];
+
+            foreach ($documentTypes as $type) {
+                if ($request->hasFile($type)) {
+                    $file = $request->file($type);
+                    $path = $file->store('client_documents', 'public');
+
+                    $client->documents()->create([
+                        'type' => $type,
+                        'file_path' => $path,
+                        'file_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
+                    ]);
+                }
+            }
+
+            // 5. Log the audit trace (Requirement #5)
             AuditLog::create([
                 'user_id' => $staff->id,
                 'action' => 'client_full_onboarding',
@@ -163,7 +219,7 @@ class ClientController extends Controller
             abort(403, 'Attempting to access client outside your assigned center.');
         }
 
-        $client->load(['user', 'loans.product', 'guarantors', 'user.collationCenter']);
+        $client->load(['user', 'loans.product', 'guarantors', 'user.collationCenter', 'documents']);
         return view('clients.show', compact('client'));
     }
 }

@@ -9,12 +9,14 @@ class Client extends Model
 {
     protected $fillable = [
         'user_id',
+        'officer_id',
         'national_id',
         'bvn',
         'address',
         'income',
         'date_of_birth',
-        'employment_status'
+        'employment_status',
+        'officer_comment'
     ];
 
     /**
@@ -41,5 +43,15 @@ class Client extends Model
     public function guarantors(): HasMany
     {
         return $this->hasMany(Guarantor::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ClientDocument::class);
+    }
+
+    public function officer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'officer_id');
     }
 }
