@@ -120,4 +120,47 @@ class PaymentApiController extends Controller
         return (new PaymentResource($payment->fresh(['loan', 'schedule'])))
             ->additional(['message' => 'Payment verified successfully.']);
     }
+    /**
+     * POST /api/schedules/{schedule}/pay
+     * Direct mark schedule as paid — Admin/Officer only.
+     */
+    public function markPaid(LoanSchedule $schedule)
+    {
+        $user = Auth::user();
+
+        if (!in_array($user->role, ['admin', 'officer'])) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if ($schedule->status === 'paid') {
+            return response()->json(['message' => 'This schedule is already paid.'], 422);
+        }
+
+        DB::transaction(function () use ($schedule, $user) {
+            // Create the verified payment record directly
+            $payment = Payment::create([
+                'loan_id' => $schedule->loan_id,
+                'loan_schedule_id' => $schedule->id,
+                'amount' => $schedule->total_due,
+                'method' => 'cash',
+                'status' => 'verified',
+                'paid_at' => now(),
+                'recorded_by' => $user->id,
+                'verified_by' => $user->id,
+                'verified_at' => now(),
+            ]);
+
+            $schedule->update(['status' => 'paid']);
+
+            AuditLog::create([
+                'user_id' => $user->id,
+                'action' => 'schedule_marked_paid',
+                'description' => "Schedule #{$schedule->id} directly marked as paid via API.",
+                'model_type' => Payment::class,
+                'model_id' => $payment->id,
+            ]);
+        });
+
+        return response()->json(['message' => 'Schedule successfully marked as paid.']);
+    }
 }
