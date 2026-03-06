@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LoanResource;
 use App\Models\{Loan, Client, LoanSchedule, LoanProduct, AuditLog};
+use App\Notifications\LoanApprovedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 
